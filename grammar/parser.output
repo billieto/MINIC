@@ -1,0 +1,508 @@
+Grammar
+
+    0 $accept: compile_unit $end
+
+    1 compile_unit: statements
+
+    2 code_block: OPEN_BRACKET statements CLOSE_BRACKET
+    3           | expression SEMICOLON
+
+    4 statements: statements statement
+    5           | statement
+
+    6 statement: expression_list SEMICOLON
+    7          | if_statement
+
+    8 condition: OPEN_PAREN expression_list CLOSE_PAREN
+
+    9 if_statement: IF condition code_block
+   10             | IF condition code_block ELSE code_block
+   11             | IF condition code_block ELSE if_statement
+
+   12 expression_list: expression
+
+   13 expression: NUMBER
+   14           | IDENTIFIER
+   15           | OPEN_PAREN expression CLOSE_PAREN
+   16           | expression MUL expression
+   17           | expression DIV expression
+   18           | expression PLUS expression
+   19           | expression MINUS expression
+   20           | IDENTIFIER EQUALS expression
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    error (256)
+    NUMBER <node> (258) 13
+    IDENTIFIER <node> (259) 14 20
+    SEMICOLON (260) 3 6
+    OPEN_PAREN (261) 8 15
+    CLOSE_PAREN (262) 8 15
+    OPEN_BRACKET (263) 2
+    CLOSE_BRACKET (264) 2
+    IF (265) 9 10 11
+    ELSE (266) 10 11
+    LOWER_THAN_ELSE (267)
+    PLUS (268) 18
+    EQUALS (269) 20
+    MINUS (270) 19
+    MUL (271) 16
+    DIV (272) 17
+
+
+Nonterminals, with rules where they appear
+
+    $accept (18)
+        on left: 0
+    compile_unit <node> (19)
+        on left: 1
+        on right: 0
+    code_block <node> (20)
+        on left: 2 3
+        on right: 9 10 11
+    statements <node> (21)
+        on left: 4 5
+        on right: 1 2 4
+    statement <node> (22)
+        on left: 6 7
+        on right: 4 5
+    condition <node> (23)
+        on left: 8
+        on right: 9 10 11
+    if_statement <node> (24)
+        on left: 9 10 11
+        on right: 7 11
+    expression_list <node> (25)
+        on left: 12
+        on right: 6 8
+    expression <node> (26)
+        on left: 13 14 15 16 17 18 19 20
+        on right: 3 12 15 16 17 18 19 20
+
+
+State 0
+
+    0 $accept: . compile_unit $end
+
+    NUMBER      shift, and go to state 1
+    IDENTIFIER  shift, and go to state 2
+    OPEN_PAREN  shift, and go to state 3
+    IF          shift, and go to state 4
+
+    compile_unit     go to state 5
+    statements       go to state 6
+    statement        go to state 7
+    if_statement     go to state 8
+    expression_list  go to state 9
+    expression       go to state 10
+
+
+State 1
+
+   13 expression: NUMBER .
+
+    $default  reduce using rule 13 (expression)
+
+
+State 2
+
+   14 expression: IDENTIFIER .
+   20           | IDENTIFIER . EQUALS expression
+
+    EQUALS  shift, and go to state 11
+
+    $default  reduce using rule 14 (expression)
+
+
+State 3
+
+   15 expression: OPEN_PAREN . expression CLOSE_PAREN
+
+    NUMBER      shift, and go to state 1
+    IDENTIFIER  shift, and go to state 2
+    OPEN_PAREN  shift, and go to state 3
+
+    expression  go to state 12
+
+
+State 4
+
+    9 if_statement: IF . condition code_block
+   10             | IF . condition code_block ELSE code_block
+   11             | IF . condition code_block ELSE if_statement
+
+    OPEN_PAREN  shift, and go to state 13
+
+    condition  go to state 14
+
+
+State 5
+
+    0 $accept: compile_unit . $end
+
+    $end  shift, and go to state 15
+
+
+State 6
+
+    1 compile_unit: statements .
+    4 statements: statements . statement
+
+    NUMBER      shift, and go to state 1
+    IDENTIFIER  shift, and go to state 2
+    OPEN_PAREN  shift, and go to state 3
+    IF          shift, and go to state 4
+
+    $default  reduce using rule 1 (compile_unit)
+
+    statement        go to state 16
+    if_statement     go to state 8
+    expression_list  go to state 9
+    expression       go to state 10
+
+
+State 7
+
+    5 statements: statement .
+
+    $default  reduce using rule 5 (statements)
+
+
+State 8
+
+    7 statement: if_statement .
+
+    $default  reduce using rule 7 (statement)
+
+
+State 9
+
+    6 statement: expression_list . SEMICOLON
+
+    SEMICOLON  shift, and go to state 17
+
+
+State 10
+
+   12 expression_list: expression .
+   16 expression: expression . MUL expression
+   17           | expression . DIV expression
+   18           | expression . PLUS expression
+   19           | expression . MINUS expression
+
+    PLUS   shift, and go to state 18
+    MINUS  shift, and go to state 19
+    MUL    shift, and go to state 20
+    DIV    shift, and go to state 21
+
+    $default  reduce using rule 12 (expression_list)
+
+
+State 11
+
+   20 expression: IDENTIFIER EQUALS . expression
+
+    NUMBER      shift, and go to state 1
+    IDENTIFIER  shift, and go to state 2
+    OPEN_PAREN  shift, and go to state 3
+
+    expression  go to state 22
+
+
+State 12
+
+   15 expression: OPEN_PAREN expression . CLOSE_PAREN
+   16           | expression . MUL expression
+   17           | expression . DIV expression
+   18           | expression . PLUS expression
+   19           | expression . MINUS expression
+
+    CLOSE_PAREN  shift, and go to state 23
+    PLUS         shift, and go to state 18
+    MINUS        shift, and go to state 19
+    MUL          shift, and go to state 20
+    DIV          shift, and go to state 21
+
+
+State 13
+
+    8 condition: OPEN_PAREN . expression_list CLOSE_PAREN
+
+    NUMBER      shift, and go to state 1
+    IDENTIFIER  shift, and go to state 2
+    OPEN_PAREN  shift, and go to state 3
+
+    expression_list  go to state 24
+    expression       go to state 10
+
+
+State 14
+
+    9 if_statement: IF condition . code_block
+   10             | IF condition . code_block ELSE code_block
+   11             | IF condition . code_block ELSE if_statement
+
+    NUMBER        shift, and go to state 1
+    IDENTIFIER    shift, and go to state 2
+    OPEN_PAREN    shift, and go to state 3
+    OPEN_BRACKET  shift, and go to state 25
+
+    code_block  go to state 26
+    expression  go to state 27
+
+
+State 15
+
+    0 $accept: compile_unit $end .
+
+    $default  accept
+
+
+State 16
+
+    4 statements: statements statement .
+
+    $default  reduce using rule 4 (statements)
+
+
+State 17
+
+    6 statement: expression_list SEMICOLON .
+
+    $default  reduce using rule 6 (statement)
+
+
+State 18
+
+   18 expression: expression PLUS . expression
+
+    NUMBER      shift, and go to state 1
+    IDENTIFIER  shift, and go to state 2
+    OPEN_PAREN  shift, and go to state 3
+
+    expression  go to state 28
+
+
+State 19
+
+   19 expression: expression MINUS . expression
+
+    NUMBER      shift, and go to state 1
+    IDENTIFIER  shift, and go to state 2
+    OPEN_PAREN  shift, and go to state 3
+
+    expression  go to state 29
+
+
+State 20
+
+   16 expression: expression MUL . expression
+
+    NUMBER      shift, and go to state 1
+    IDENTIFIER  shift, and go to state 2
+    OPEN_PAREN  shift, and go to state 3
+
+    expression  go to state 30
+
+
+State 21
+
+   17 expression: expression DIV . expression
+
+    NUMBER      shift, and go to state 1
+    IDENTIFIER  shift, and go to state 2
+    OPEN_PAREN  shift, and go to state 3
+
+    expression  go to state 31
+
+
+State 22
+
+   16 expression: expression . MUL expression
+   17           | expression . DIV expression
+   18           | expression . PLUS expression
+   19           | expression . MINUS expression
+   20           | IDENTIFIER EQUALS expression .
+
+    PLUS   shift, and go to state 18
+    MINUS  shift, and go to state 19
+    MUL    shift, and go to state 20
+    DIV    shift, and go to state 21
+
+    $default  reduce using rule 20 (expression)
+
+
+State 23
+
+   15 expression: OPEN_PAREN expression CLOSE_PAREN .
+
+    $default  reduce using rule 15 (expression)
+
+
+State 24
+
+    8 condition: OPEN_PAREN expression_list . CLOSE_PAREN
+
+    CLOSE_PAREN  shift, and go to state 32
+
+
+State 25
+
+    2 code_block: OPEN_BRACKET . statements CLOSE_BRACKET
+
+    NUMBER      shift, and go to state 1
+    IDENTIFIER  shift, and go to state 2
+    OPEN_PAREN  shift, and go to state 3
+    IF          shift, and go to state 4
+
+    statements       go to state 33
+    statement        go to state 7
+    if_statement     go to state 8
+    expression_list  go to state 9
+    expression       go to state 10
+
+
+State 26
+
+    9 if_statement: IF condition code_block .
+   10             | IF condition code_block . ELSE code_block
+   11             | IF condition code_block . ELSE if_statement
+
+    ELSE  shift, and go to state 34
+
+    $default  reduce using rule 9 (if_statement)
+
+
+State 27
+
+    3 code_block: expression . SEMICOLON
+   16 expression: expression . MUL expression
+   17           | expression . DIV expression
+   18           | expression . PLUS expression
+   19           | expression . MINUS expression
+
+    SEMICOLON  shift, and go to state 35
+    PLUS       shift, and go to state 18
+    MINUS      shift, and go to state 19
+    MUL        shift, and go to state 20
+    DIV        shift, and go to state 21
+
+
+State 28
+
+   16 expression: expression . MUL expression
+   17           | expression . DIV expression
+   18           | expression . PLUS expression
+   18           | expression PLUS expression .
+   19           | expression . MINUS expression
+
+    MUL  shift, and go to state 20
+    DIV  shift, and go to state 21
+
+    $default  reduce using rule 18 (expression)
+
+
+State 29
+
+   16 expression: expression . MUL expression
+   17           | expression . DIV expression
+   18           | expression . PLUS expression
+   19           | expression . MINUS expression
+   19           | expression MINUS expression .
+
+    MUL  shift, and go to state 20
+    DIV  shift, and go to state 21
+
+    $default  reduce using rule 19 (expression)
+
+
+State 30
+
+   16 expression: expression . MUL expression
+   16           | expression MUL expression .
+   17           | expression . DIV expression
+   18           | expression . PLUS expression
+   19           | expression . MINUS expression
+
+    $default  reduce using rule 16 (expression)
+
+
+State 31
+
+   16 expression: expression . MUL expression
+   17           | expression . DIV expression
+   17           | expression DIV expression .
+   18           | expression . PLUS expression
+   19           | expression . MINUS expression
+
+    $default  reduce using rule 17 (expression)
+
+
+State 32
+
+    8 condition: OPEN_PAREN expression_list CLOSE_PAREN .
+
+    $default  reduce using rule 8 (condition)
+
+
+State 33
+
+    2 code_block: OPEN_BRACKET statements . CLOSE_BRACKET
+    4 statements: statements . statement
+
+    NUMBER         shift, and go to state 1
+    IDENTIFIER     shift, and go to state 2
+    OPEN_PAREN     shift, and go to state 3
+    CLOSE_BRACKET  shift, and go to state 36
+    IF             shift, and go to state 4
+
+    statement        go to state 16
+    if_statement     go to state 8
+    expression_list  go to state 9
+    expression       go to state 10
+
+
+State 34
+
+   10 if_statement: IF condition code_block ELSE . code_block
+   11             | IF condition code_block ELSE . if_statement
+
+    NUMBER        shift, and go to state 1
+    IDENTIFIER    shift, and go to state 2
+    OPEN_PAREN    shift, and go to state 3
+    OPEN_BRACKET  shift, and go to state 25
+    IF            shift, and go to state 4
+
+    code_block    go to state 37
+    if_statement  go to state 38
+    expression    go to state 27
+
+
+State 35
+
+    3 code_block: expression SEMICOLON .
+
+    $default  reduce using rule 3 (code_block)
+
+
+State 36
+
+    2 code_block: OPEN_BRACKET statements CLOSE_BRACKET .
+
+    $default  reduce using rule 2 (code_block)
+
+
+State 37
+
+   10 if_statement: IF condition code_block ELSE code_block .
+
+    $default  reduce using rule 10 (if_statement)
+
+
+State 38
+
+   11 if_statement: IF condition code_block ELSE if_statement .
+
+    $default  reduce using rule 11 (if_statement)
