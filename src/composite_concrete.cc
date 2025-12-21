@@ -119,6 +119,99 @@ int subtraction::evaluate()
     return leftNode -> evaluate() - rightNode -> evaluate();
 }
 
+less::less(expression *left, expression *right) : STNode(LESS_NODE ,{left, right}) {}
+
+int less::evaluate()
+{
+    auto it = this -> getChildrenList().begin();
+    STNode *leftNode = *it;
+    it++;
+    STNode *rightNode = *it;
+
+    return leftNode -> evaluate() < rightNode -> evaluate();
+}
+
+
+less_equals::less_equals(expression *left, expression *right) : STNode(LESS_EQUALS_NODE ,{left, right}) {}
+
+int less_equals::evaluate()
+{
+    auto it = this -> getChildrenList().begin();
+    STNode *leftNode = *it;
+    it++;
+    STNode *rightNode = *it;
+
+    return leftNode -> evaluate() <= rightNode -> evaluate();
+}
+
+greater::greater(expression *left, expression *right) : STNode(GREATER_EQUALS_NODE ,{left, right}) {}
+
+int greater::evaluate()
+{
+    auto it = this -> getChildrenList().begin();
+    STNode *leftNode = *it;
+    it++;
+    STNode *rightNode = *it;
+
+    return leftNode -> evaluate() > rightNode -> evaluate();
+}
+
+greater_equals::greater_equals(expression *left, expression *right) : STNode(GREATER_EQUALS_NODE ,{left, right}) {}
+
+int greater_equals::evaluate()
+{
+    auto it = this -> getChildrenList().begin();
+    STNode *leftNode = *it;
+    it++;
+    STNode *rightNode = *it;
+
+    return leftNode -> evaluate() >= rightNode -> evaluate();
+}
+
+logic_equals::logic_equals(expression *left, expression *right) : STNode(LOGIC_EQUALS_NODE ,{left, right}) {}
+
+int logic_equals::evaluate()
+{
+    auto it = this -> getChildrenList().begin();
+    STNode *leftNode = *it;
+    it++;
+    STNode *rightNode = *it;
+
+    return leftNode -> evaluate() == rightNode -> evaluate();
+}
+
+logic_and::logic_and(expression *left, expression *right) : STNode(LOGIC_AND_NODE ,{left, right}) {}
+
+int logic_and::evaluate()
+{
+    auto it = this -> getChildrenList().begin();
+    STNode *leftNode = *it;
+    it++;
+    STNode *rightNode = *it;
+
+    return leftNode -> evaluate() && rightNode -> evaluate();
+}
+
+logic_or::logic_or(expression *left, expression *right) : STNode(LOGIC_OR_NODE ,{left, right}) {}
+
+int logic_or::evaluate()
+{
+    auto it = this -> getChildrenList().begin();
+    STNode *leftNode = *it;
+    it++;
+    STNode *rightNode = *it;
+
+    return leftNode -> evaluate() || rightNode -> evaluate();
+}
+
+logic_not::logic_not(expression *expression) : STNode(LOGIC_NOT_NODE ,{expression}) {}
+
+int logic_not::evaluate()
+{
+    auto it = this -> getChildrenList().begin();
+    return !((*it) -> evaluate());
+}
+
 assignment::assignment(IDENTIFIER *IDENTIFIER, expression *expression) : STNode(ASSIGNMENT_NODE, {IDENTIFIER, expression}) { }
 
 int assignment::evaluate()

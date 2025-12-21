@@ -89,6 +89,71 @@ public:
     int evaluate() override;
 };
 
+class less : public STNode
+{
+public:
+    less(expression *left, expression *right);
+
+    int evaluate() override;
+};
+
+class less_equals : public STNode
+{
+public:
+    less_equals(expression *left, expression *right);
+    
+    int evaluate() override;
+};
+
+class greater : public STNode
+{
+public:
+    greater(expression *left, expression *right);
+    
+    int evaluate() override;
+};
+
+class greater_equals : public STNode
+{
+public:
+    greater_equals(expression *left, expression *right);
+    
+    int evaluate() override;
+};
+
+class logic_equals : public STNode
+{
+public:
+    logic_equals(expression *left, expression *right);
+
+    int evaluate() override;
+};
+
+class logic_and : public STNode
+{
+public:
+    logic_and(expression *left, expression *right);
+
+    int evaluate() override;
+};
+
+class logic_or : public STNode
+{
+public:
+    logic_or(expression *left, expression *right);
+
+    int evaluate() override;
+};
+
+class logic_not : public STNode
+{
+public:
+    logic_not(expression *expression);
+
+    int evaluate() override;
+};
+
+
 class assignment : public STNode
 {
 public:

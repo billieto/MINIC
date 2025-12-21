@@ -9,7 +9,9 @@ STNode* g_root = NULL;
 int STNode::m_serialCounter = 0;
 std::string g_nodeTypeLabels[] = { "COMPILE_UNIT", "COMPOUND_STATEMENT", "STATEMENT_LIST",
                                    "STATEMENT", "CONDITION", "IF_STATEMENT", "NUMBER", "EXPRESSION", 
-                                   "IDENTIFIER", "ASSIGNMENT", "MULTIPLICATION", "DIVISION", "ADDITION", "SUBTRACTION"
+                                   "IDENTIFIER", "ASSIGNMENT", "MULTIPLICATION", "DIVISION", "ADDITION", "SUBTRACTION",
+                                   "LESS", "LESS_EQUALS", "GREATER", "GREATER_EQUALS", "LOGIC_EQUALS", "LOGIC_AND",
+                                   "LOGIC_OR", "LOGIC_NOT"
                                 };
 
 STNode::STNode(nodeType nodeType, std::initializer_list<STNode *> children) 

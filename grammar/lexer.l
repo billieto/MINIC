@@ -38,6 +38,7 @@ ID [a-zA-Z_][a-zA-Z0-9_]*
 "<="  { return token::LESS_EQUALS; }  
 ">" { return token::GREATER; }
 ">="    { return token::GREATER_EQUALS; }
+
 "=="    { return token::LOGIC_EQUALS; }
 "&&"    { return token::LOGIC_AND; }
 "||"    { return token::LOGIC_OR; }

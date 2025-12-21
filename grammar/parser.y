@@ -86,14 +86,14 @@ expression:
 |	expression DIV expression { $$ = new division((expression *) $1, (expression *) $3); }
 |	expression PLUS expression { $$ = new addition((expression *) $1, (expression *) $3); }
 |	expression MINUS expression { $$ = new subtraction((expression *) $1, (expression *) $3); }
-|	expression LESS expression {}
-|	expression LESS_EQUALS expression {}
-|	expression GREATER expression {}
-|	expression GREATER_EQUALS expression {}
-|	expression LOGIC_EQUALS expression {}
-|	expression LOGIC_AND expression {}
-|	expression LOGIC_OR expression {}
-|	LOGIC_NOT expression {}
+|	expression LESS expression { $$ = new less((expression *) $1, (expression *) $3);}
+|	expression LESS_EQUALS expression {	$$ = new less_equals((expression *) $1, (expression *) $3); }
+|	expression GREATER expression { $$ = new greater((expression *) $1, (expression *) $3); }
+|	expression GREATER_EQUALS expression { $$ = new greater_equals((expression *) $1, (expression *) $3); }
+|	expression LOGIC_EQUALS expression { $$ = new logic_equals((expression *) $1, (expression *) $3); }
+|	expression LOGIC_AND expression { $$ = new logic_and((expression *) $1, (expression *) $3); }
+|	expression LOGIC_OR expression { $$ = new logic_or((expression *) $1, (expression *) $3); }
+|	LOGIC_NOT expression { $$ = new logic_not((expression *) $2); }
 |	IDENTIFIER EQUALS expression { $$ = new assignment((IDENTIFIER *) $1, (expression *) $3); }
 ;
 
