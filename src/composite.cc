@@ -7,9 +7,10 @@
 
 STNode* g_root = NULL;
 int STNode::m_serialCounter = 0;
-std::string g_nodeTypeLabels[] = { "COMPILE_UNIT", "CODE_BLOCK", "STATEMENTS", "STATEMENT", "CONDITION", "IF_STATEMENT",
-                                   "NUMBER", "EXPRESSION", "EXPRESSION_LIST", 
-                                   "IDENTIFIER", "ASSIGNMENT", "MULTIPLICATION", "DIVISION", "ADDITION", "SUBTRACTION"};
+std::string g_nodeTypeLabels[] = { "COMPILE_UNIT", "COMPOUND_STATEMENT", "STATEMENT_LIST",
+                                   "STATEMENT", "CONDITION", "IF_STATEMENT", "NUMBER", "EXPRESSION", 
+                                   "IDENTIFIER", "ASSIGNMENT", "MULTIPLICATION", "DIVISION", "ADDITION", "SUBTRACTION"
+                                };
 
 STNode::STNode(nodeType nodeType, std::initializer_list<STNode *> children) 
 {

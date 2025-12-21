@@ -133,44 +133,47 @@ int assignment::evaluate()
     return id -> getValue();
 }
 
-expression_list::expression_list(expression *expression) : STNode(EXPRESSION_LIST_NODE, {expression}) { }
+statement::statement(if_statement *if_statement) : STNode(STATEMENT_NODE, {if_statement}) { }
 
-// expression_list::expression_list(expression_list *expression_list, expression *expression) : STNode(EXPRESSION_LIST_NODE, {expression_list, expression}) { }
+statement::statement(expression *expression) : STNode(STATEMENT_NODE, {expression}) { }
 
-int expression_list::evaluate()
+statement::statement(compound_statement *compound_statement) : STNode(COMPMOUNT_STATEMENT_NODE, {compound_statement}) { }
+
+int statement::evaluate()
 {
-    const std::list<STNode *> &temp = this -> STNode::getChildrenList();
+    auto it = this -> getChildrenList().begin(); // NA KOITA3W NA DW DIAFORA ME BEGIN KAI SKETO GET METHOD
+
+    return (*it) -> evaluate(); 
+}
+
+statement_list::statement_list(statement_list *statement_list, statement *statement) : STNode(STATEMENT_LIST_NODE, {statement_list, statement}) { }
+
+statement_list::statement_list(statement *statement) : STNode(STATEMENT_LIST_NODE, {statement}) { }
+
+int statement_list::evaluate()
+{
     int result = 0;
 
-    for (const auto &it : temp)
+    for (const auto &child : this -> getChildrenList())
     {
-        result = it->evaluate();
-        std::cout << result << std::endl;
+        result += child -> evaluate();
     }
 
     return result;
 }
 
-statement::statement(if_statement *if_statement) : STNode(STATEMENT_NODE, {if_statement}) { }
+compound_statement::compound_statement(statement_list *statement_list) : STNode(COMPMOUNT_STATEMENT_NODE, {statement_list}) { }
 
-statement::statement(expression_list *expression_list) : STNode(STATEMENT_NODE, {expression_list}) { }
+compound_statement::compound_statement() : STNode(COMPMOUNT_STATEMENT_NODE, {}) { }
 
-statements::statements(statements *statements, statement *statement) : STNode(STATEMENTS_NODE, {statements, statement}) { }
-
-statements::statements(statement *statement) : STNode(STATEMENTS_NODE, {statement}) { }
-
-code_block::code_block(statements *statements) : STNode(CODE_BLOCK_NODE, {statements}) { }
-
-code_block::code_block(expression *expression) : STNode(CODE_BLOCK_NODE, {expression}) { }
-
-int code_block::evaluate()
+int compound_statement::evaluate()
 {
     auto it = this -> getChildrenList().begin();
 
     return (*it) -> evaluate();
 }
 
-condition::condition(expression_list *expression_list) : STNode(CONDITION_NODE, {expression_list}) { }
+condition::condition(expression *expression) : STNode(CONDITION_NODE, {expression}) { }
 
 int condition::evaluate()
 {
@@ -179,20 +182,18 @@ int condition::evaluate()
     return (*it) -> evaluate();
 }
 
-if_statement::if_statement(condition *condition, code_block *code_block)
-: STNode(IF_STATEMENT_NODE, {condition, code_block}) { }
+if_statement::if_statement(condition *condition, statement_list *statement_list)
+: STNode(IF_STATEMENT_NODE, {condition, statement_list}) { }
 
-if_statement::if_statement(condition *condition, code_block *code_block1, code_block *code_block2)
-: STNode(IF_STATEMENT_NODE, {condition, code_block1, code_block2}) { }
-
-if_statement::if_statement(condition *condition, code_block *code_block, if_statement *if_statement)
-: STNode(IF_STATEMENT_NODE, {condition, code_block, if_statement}) { }
+if_statement::if_statement(condition *condition, statement_list *statement_list1, statement_list *statement_list2)
+: STNode(IF_STATEMENT_NODE, {condition, statement_list1, statement_list2}) { }
 
 int if_statement::evaluate()
 {
     auto it = this -> getChildrenList().begin();
     int cond = (*it) -> evaluate();
     int result = 0;
+
     if (cond)
     {
         it++;
@@ -208,7 +209,7 @@ int if_statement::evaluate()
     return result;
 }
 
-compile_unit::compile_unit(statements *statements) : STNode(COMPILE_UNITE_NODE, {statements}) { }
+compile_unit::compile_unit(statement_list *statement_list) : STNode(COMPILE_UNITE_NODE, {statement_list}) { }
 
 int compile_unit::evaluate()
 {

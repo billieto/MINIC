@@ -6,6 +6,9 @@
 #include <string>
 
 class if_statement;
+class compound_statement;
+class statement_list;
+class statement;
 
 class NUMBER : public STNode
 {
@@ -94,11 +97,20 @@ public:
     int evaluate() override;
 };
 
-class expression_list : public STNode
+class compound_statement : public STNode
 {
 public:
-    expression_list(expression *expression);
-    //expression_list(expression_list *expression_list, expression *expression);
+    compound_statement(statement_list *statement_list);
+    compound_statement();
+
+    int evaluate() override;
+};
+
+class statement_list : public STNode
+{
+public:
+    statement_list(statement_list *statement_list, statement *statement);
+    statement_list(statement *statement);
 
     int evaluate() override;
 };
@@ -107,21 +119,8 @@ class statement : public STNode
 {
 public:
     statement(if_statement *if_statement);
-    statement(expression_list *expression_list);
-};
-
-class statements : public STNode
-{
-public:
-    statements(statements *statements, statement *statement);
-    statements(statement *statement);
-};
-
-class code_block : public STNode
-{
-public:
-    code_block(statements *statements);
-    code_block(expression *expression);
+    statement(expression *expression);
+    statement(compound_statement *compound_statement);
 
     int evaluate() override;
 };
@@ -129,7 +128,7 @@ public:
 class condition : public STNode
 {
 public:
-    condition(expression_list *expression_list);
+    condition(expression *expression);
 
     int evaluate() override;
 };
@@ -137,9 +136,8 @@ public:
 class if_statement : public STNode
 {
 public:
-    if_statement(condition *condition, code_block *code_block);
-    if_statement(condition *condition, code_block *code_block1, code_block *code_block2);
-    if_statement(condition *condition, code_block *code_block1, if_statement *if_statement);
+    if_statement(condition *condition, statement_list *statement_list);
+    if_statement(condition *condition, statement_list *statement_list1, statement_list *statement_list2);
     
     int evaluate() override;
 };
@@ -147,7 +145,7 @@ public:
 class compile_unit : public STNode
 {
 public:
-    compile_unit(statements *statements);
+    compile_unit(statement_list *statement_list);
 
     int evaluate() override;
 };
