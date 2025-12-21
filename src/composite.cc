@@ -11,7 +11,7 @@ std::string g_nodeTypeLabels[] = { "COMPILE_UNIT", "COMPOUND_STATEMENT", "STATEM
                                    "STATEMENT", "CONDITION", "IF_STATEMENT", "NUMBER", "EXPRESSION", 
                                    "IDENTIFIER", "ASSIGNMENT", "MULTIPLICATION", "DIVISION", "ADDITION", "SUBTRACTION",
                                    "LESS", "LESS_EQUALS", "GREATER", "GREATER_EQUALS", "LOGIC_EQUALS", "LOGIC_AND",
-                                   "LOGIC_OR", "LOGIC_NOT"
+                                   "LOGIC_OR", "LOGIC_NOT", "LOGIC_NOT_EQUALS", "INCREMENT", "DECREMENT"
                                 };
 
 STNode::STNode(nodeType nodeType, std::initializer_list<STNode *> children) 

@@ -39,9 +39,19 @@
 
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
+
 %right EQUALS
+
+%left LOGIC_OR
+%left LOGIC_AND
+
+%left LOGIC_EQUALS LOGIC_NOT_EQUALS
+%left LESS LESS_EQUALS GREATER GREATER_EQUALS
+
 %left PLUS MINUS
 %left MUL DIV
+
+%left INCREMENT DECREMENT
 
 %%
 
@@ -91,9 +101,12 @@ expression:
 |	expression GREATER expression { $$ = new greater((expression *) $1, (expression *) $3); }
 |	expression GREATER_EQUALS expression { $$ = new greater_equals((expression *) $1, (expression *) $3); }
 |	expression LOGIC_EQUALS expression { $$ = new logic_equals((expression *) $1, (expression *) $3); }
+|	expression LOGIC_NOT_EQUALS expression { $$ = new logic_not_equals((expression *) $1, (expression *) $3); }
 |	expression LOGIC_AND expression { $$ = new logic_and((expression *) $1, (expression *) $3); }
 |	expression LOGIC_OR expression { $$ = new logic_or((expression *) $1, (expression *) $3); }
 |	LOGIC_NOT expression { $$ = new logic_not((expression *) $2); }
+|	expression INCREMENT { $$ = new increment((expression *) $1); }
+|	expression DECREMENT { $$ = new decrement((expression *) $1); }
 |	IDENTIFIER EQUALS expression { $$ = new assignment((IDENTIFIER *) $1, (expression *) $3); }
 ;
 

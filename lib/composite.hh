@@ -29,7 +29,10 @@ typedef enum nodeType
     LOGIC_EQUALS_NODE,
     LOGIC_AND_NODE,
     LOGIC_OR_NODE,
-    LOGIC_NOT_NODE
+    LOGIC_NOT_NODE,
+    LOGIC_NOT_EQUALS_NODE,
+    INCREMENT_NODE,
+    DECREMENT_NODE
 
 } nodeType;
 

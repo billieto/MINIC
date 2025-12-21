@@ -20,7 +20,8 @@ typedef yy::parser::token token;
 ID [a-zA-Z_][a-zA-Z0-9_]*
 
 %%
-
+"++"    { return token::INCREMENT; }
+"--"    { return token::DECREMENT; }
 "+" { return token::PLUS; }
 ";" { return token::SEMICOLON; }
 "=" { return token::EQUALS; }

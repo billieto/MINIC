@@ -129,6 +129,14 @@ public:
     int evaluate() override;
 };
 
+class logic_not_equals : public STNode
+{
+public:
+    logic_not_equals(expression *left, expression *right);
+
+    int evaluate() override;
+};
+
 class logic_and : public STNode
 {
 public:
@@ -153,6 +161,21 @@ public:
     int evaluate() override;
 };
 
+class increment : public STNode
+{
+public:
+    increment(expression *expression);
+
+    int evaluate() override;
+};
+
+class decrement : public STNode
+{
+public:
+    decrement(expression *expression);
+
+    int evaluate() override;
+};
 
 class assignment : public STNode
 {

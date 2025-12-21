@@ -180,6 +180,18 @@ int logic_equals::evaluate()
     return leftNode -> evaluate() == rightNode -> evaluate();
 }
 
+logic_not_equals::logic_not_equals(expression *left, expression *right) : STNode(LOGIC_NOT_EQUALS_NODE ,{left, right}) {}
+
+int logic_not_equals::evaluate()
+{
+    auto it = this -> getChildrenList().begin();
+    STNode *leftNode = *it;
+    it++;
+    STNode *rightNode = *it;
+
+    return leftNode -> evaluate() != rightNode -> evaluate();
+}
+
 logic_and::logic_and(expression *left, expression *right) : STNode(LOGIC_AND_NODE ,{left, right}) {}
 
 int logic_and::evaluate()
@@ -212,6 +224,23 @@ int logic_not::evaluate()
     return !((*it) -> evaluate());
 }
 
+increment::increment(expression *expression) : STNode(INCREMENT_NODE ,{expression}) { }
+
+int increment::evaluate()
+{
+    auto it = this -> getChildrenList().begin();
+    int temp = (*it) -> evaluate();
+    return (temp + 1);
+}
+
+decrement::decrement(expression *expression) : STNode(DECREMENT_NODE ,{expression}) { }
+
+int decrement::evaluate()
+{
+    auto it = this -> getChildrenList().begin();
+    int temp = (*it) -> evaluate();
+    return (temp - 1);
+}
 assignment::assignment(IDENTIFIER *IDENTIFIER, expression *expression) : STNode(ASSIGNMENT_NODE, {IDENTIFIER, expression}) { }
 
 int assignment::evaluate()
