@@ -7,11 +7,14 @@
 
 STNode* g_root = NULL;
 int STNode::m_serialCounter = 0;
-std::string g_nodeTypeLabels[] = { "COMPILE_UNIT", "COMPOUND_STATEMENT", "STATEMENT_LIST",
+std::string g_nodeTypeLabels[] = { "PROGRAM", "COMPOUND_STATEMENT", "STATEMENT_LIST",
                                    "STATEMENT", "CONDITION", "IF_STATEMENT", "NUMBER", "EXPRESSION", 
                                    "IDENTIFIER", "ASSIGNMENT", "MULTIPLICATION", "DIVISION", "ADDITION", "SUBTRACTION",
                                    "LESS", "LESS_EQUALS", "GREATER", "GREATER_EQUALS", "LOGIC_EQUALS", "LOGIC_AND",
-                                   "LOGIC_OR", "LOGIC_NOT", "LOGIC_NOT_EQUALS", "INCREMENT", "DECREMENT"
+                                   "LOGIC_OR", "LOGIC_NOT", "LOGIC_NOT_EQUALS", "INCREMENT", "DECREMENT", "TYPE_SPECIFIER",
+                                   "VARIABLE_DECLARATION", "FUNCTION_CALL", "FUNCTION_DEFINITION", "PARAMETER_LIST",
+                                   "ARGUMENT_LIST", "FUNCTION_DECLARATION", "EXTERNAL_DECLARATION", "TRANSLATION_UNIT", "RETURN_NODE",
+                                   "VARIABLE_DECLARATION_LIST", "VARIABLE_DECLARATION_STATEMENT"
                                 };
 
 STNode::STNode(nodeType nodeType, std::initializer_list<STNode *> children) 
@@ -19,7 +22,6 @@ STNode::STNode(nodeType nodeType, std::initializer_list<STNode *> children)
     m_nodeType = nodeType;
     m_serial = m_serialCounter++;
     m_graphvizLabel = g_nodeTypeLabels[m_nodeType];
-    //m_children = new std::list<STNode *>();
 
     for (const auto& child : children)
     {

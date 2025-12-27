@@ -8,7 +8,7 @@
 
 typedef enum nodeType
 {
-    COMPILE_UNITE_NODE,
+    PROGRAM_NODE,
     COMPMOUNT_STATEMENT_NODE,
     STATEMENT_LIST_NODE,
     STATEMENT_NODE,
@@ -32,9 +32,37 @@ typedef enum nodeType
     LOGIC_NOT_NODE,
     LOGIC_NOT_EQUALS_NODE,
     INCREMENT_NODE,
-    DECREMENT_NODE
+    DECREMENT_NODE,
+    TYPE_SPECIFIER_NODE,
+    VARIABLE_DECLARATION_NODE,
+    FUNCTION_CALL_NODE,
+    FUNCTION_DEFINITION_NODE,
+    PARAMETER_LIST_NODE,
+    ARGUMENT_LIST_NODE,
+    FUNCTION_DECLARATION_NODE,
+    EXTERNAL_DECLARATION_NODE,
+    TRANSLATION_UNIT_NODE,
+    RETURN_NODE,
+    VARIABLE_DECLARATION_LIST_NODE,
+    VARIABLE_DECLARATION_STATEMENT_NODE
 
 } nodeType;
+
+// class Value
+// {
+// private:
+//     dataType m_type;
+//     union
+//     {
+//         int i;
+//         float f;
+//         double d;
+//         char c;
+//     } m_value
+//     ;
+// public:
+//     Value();
+// };
 
 class STNode 
 {
@@ -43,7 +71,7 @@ private:
     std::string m_graphvizLabel;
     int m_serial;
     static int m_serialCounter;
-    //std::list<std::unique_ptr<STNode>> m_children; // NA TO KOITAKSW OTAN PAW TRIPOLI APO TO STRUSTAP
+    //std::list<std::unique_ptr<STNode>> m_children;
     std::list<STNode *> m_children;
     STNode *m_parent;
 public:
@@ -56,7 +84,7 @@ public:
         }
     
         m_children.clear();
-    } // EKANA ALLAGH EDW! to ekana virtual default kai ekana to list xwris dikti gia na diaxirizete mono tou to delete
+    }
 
     nodeType getNodeType();
     void setParent(STNode *parent);

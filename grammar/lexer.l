@@ -20,8 +20,9 @@ typedef yy::parser::token token;
 ID [a-zA-Z_][a-zA-Z0-9_]*
 
 %%
-"++"    { return token::INCREMENT; }
-"--"    { return token::DECREMENT; }
+
+"++" { return token::INCREMENT; }
+"--" { return token::DECREMENT; }
 "+" { return token::PLUS; }
 ";" { return token::SEMICOLON; }
 "=" { return token::EQUALS; }
@@ -34,6 +35,7 @@ ID [a-zA-Z_][a-zA-Z0-9_]*
 "}" { return token::CLOSE_BRACKET; }
 "if"    { return token::IF; }
 "else"  { return token::ELSE; }
+"," { return token::COMMA; }
 
 "<" { return token::LESS; }
 "<="  { return token::LESS_EQUALS; }  
@@ -45,29 +47,29 @@ ID [a-zA-Z_][a-zA-Z0-9_]*
 "||"    { return token::LOGIC_OR; }
 "!" { return token::LOGIC_NOT; }
 
-[0-9]+  {
+"int" { return token::INT_TYPE; }
+"double" { return token::DOUBLE_TYPE; }
+"float" { return token::FLOAT_TYPE; }
+"char" { return token::CHAR_TYPE; }
+"void" { return token::VOID_TYPE; }
+"return" { return token::RETURN; }
+ /* "break" { return token::BREAK; }
+    "continue" { return token::continue; }*/
+
+[0-9]+  { // TODO: If i want type system i need to make float numbers and in the constructor of the NUMBER class i need to sent its type.
             yylval -> node = new NUMBER(atoi(yytext));
 			return token::NUMBER;
         }
 
-{ID}  {
-        if (!SymbolTable::getInstance() -> lookup(yytext))
-        {
+{ID}    {
             yylval -> node = new IDENTIFIER(yytext);
-            SymbolTable::getInstance() -> insert(yytext, yylval -> node);
-        }
-        else
-        {
-            yylval -> node = SymbolTable::getInstance() -> getNode(yytext);
+            return token::IDENTIFIER;
+        }   
 
-        return token::IDENTIFIER;
-        }
-    }
-
-"#" { BEGIN(PRE_PROCESSOR); }
+ /* "#" { BEGIN(PRE_PROCESSOR); }
 <PRE_PROCESSOR>"include "ID { }
 <PRE_PROCESSOR>"define "ID { }
-<PRE_PROCESSOR>"\n" { BEGIN(INITIAL); }
+<PRE_PROCESSOR>"\n" { BEGIN(INITIAL); } */
 
 "//"    { BEGIN(SINGLE_LINE_COMMENT); }
 <SINGLE_LINE_COMMENT>.

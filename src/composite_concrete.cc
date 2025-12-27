@@ -1,10 +1,13 @@
 #include "../lib/composite_concrete.hh"
 #include "../lib/composite.hh"
-#include <cstdint>
 #include <iostream>
 #include <list>
 #include <ostream>
 #include <string>
+#include <sys/types.h>
+#include <vector>
+
+dataType currentType;
 
 NUMBER::NUMBER(int value) : STNode(NUMBER_NODE, {})
 {
@@ -40,21 +43,11 @@ int NUMBER::evaluate()
 IDENTIFIER::IDENTIFIER(std::string str) : STNode(IDENTIFIER_NODE, {})
 {
     m_label = str;
-    m_value =  INT16_MAX;
 }
 
-void IDENTIFIER::setValue(int value)
+std::string IDENTIFIER::getLabel()
 {
-    m_value = value;
-}
-
-int IDENTIFIER::getValue()
-{
-    if (m_value == INT16_MAX)
-    {
-        // Error handling, not assigned a value
-    }
-    return m_value;
+    return m_label;
 }
 
 std::string IDENTIFIER::getGraphvizLabel()
@@ -64,7 +57,15 @@ std::string IDENTIFIER::getGraphvizLabel()
 
 int IDENTIFIER::evaluate()
 {
-    return getValue();
+    Symbol *sym = SymbolTable::getInstance() -> lookup(this->m_label); 
+
+    if (!sym)
+    {
+        std::cout << "Identifier not defined in scope" << std::endl;
+        exit(1);
+    }
+
+    return sym -> getValue();
 }
 
 expression::expression(NUMBER *NUMBER) : STNode(EXPRESSION_NODE, {NUMBER}) { }
@@ -241,18 +242,113 @@ int decrement::evaluate()
     int temp = (*it) -> evaluate();
     return (temp - 1);
 }
+
 assignment::assignment(IDENTIFIER *IDENTIFIER, expression *expression) : STNode(ASSIGNMENT_NODE, {IDENTIFIER, expression}) { }
 
 int assignment::evaluate()
 {
-    const std::list<STNode *> &temp = this -> STNode::getChildrenList();
+    auto it = this -> STNode::getChildrenList().begin();
+    
+    std::string name = ((IDENTIFIER *) (*it)) -> getLabel();
+    Symbol *sym = SymbolTable::getInstance() -> lookup(name);
+
+    if (!sym)
+    {
+        sym = SymbolTable::getInstance() -> lookupGlobal(name);
+        if (!sym || sym ->getIsFunction())
+        {
+            std::cerr << "Variable: \"" << name << "\" is not declared" << std::endl;
+            exit(1);
+        }
+    }
+
+    it++;
+    int result = (*it) -> evaluate();
+    sym -> setValue(result);
+
+    // Debug print
+    std::cout << name << "=" << std::to_string(result) << std::endl;
+    
+    return sym -> getValue();
+}
+
+variable_declaration_list::variable_declaration_list(variable_declaration *variable_declaration)
+: STNode(VARIABLE_DECLARATION_LIST_NODE, {variable_declaration})
+{
+    m_vars.push_back(variable_declaration);
+}
+
+std::vector<variable_declaration *>& variable_declaration_list::getVariables()
+{
+    return m_vars;
+}
+
+void variable_declaration_list::add(variable_declaration *variable_declaration)
+{
+    m_vars.push_back(variable_declaration);
+}
+
+variable_declaration_statement::variable_declaration_statement(type_specifier *type_specifier, variable_declaration_list *variable_declaration_list)
+: STNode(VARIABLE_DECLARATION_STATEMENT_NODE, {type_specifier, variable_declaration_list}) { }
+
+int variable_declaration_statement::evaluate()
+{
+    auto it = this -> getChildrenList().begin();
+
+    dataType currentType = ((type_specifier *) (*it)) -> getType();
+
+    it++;
+    std::vector<variable_declaration *> varList = ((variable_declaration_list *) (*it)) -> getVariables();
+
+    for (auto var : varList)
+    {
+        var -> evaluate();
+
+        Symbol sym;
+        sym.setType(currentType);
+        sym.setName(var -> getName());
+        sym.setValue(var -> getValue());
+        sym.setIsFunction(false);
+
+        if (!SymbolTable::getInstance()->insert(sym))
+        {   // Semantic Error
+            std::cerr << "Variable " << sym.getName() << " already exists." << std::endl;
+        }
+    }
+
+    return 0;
+}
+
+variable_declaration::variable_declaration(IDENTIFIER *IDENTIFIER)
+: STNode(VARIABLE_DECLARATION_NODE, {IDENTIFIER}) { }
+
+variable_declaration::variable_declaration(IDENTIFIER *IDENTIFIER, expression *expression)
+: STNode(VARIABLE_DECLARATION_NODE, {IDENTIFIER, expression}) { }
+
+int variable_declaration::evaluate()
+{
+    auto &temp = this -> getChildrenList();
 
     auto it = temp.begin();
-    IDENTIFIER *id = (IDENTIFIER *) *it;
-    it++;
-    id -> setValue((*it) -> evaluate());
+    m_name = ((IDENTIFIER *) (*it)) -> getLabel();
 
-    return id -> getValue();
+    if (temp.size() >1)
+    {
+        it++;
+        m_value = (*it) -> evaluate();
+    }
+
+    return m_value;
+}
+
+std::string variable_declaration::getName()
+{
+    return m_name;
+}
+
+int variable_declaration::getValue()
+{
+    return m_value;
 }
 
 statement::statement(if_statement *if_statement) : STNode(STATEMENT_NODE, {if_statement}) { }
@@ -331,9 +427,161 @@ int if_statement::evaluate()
     return result;
 }
 
-compile_unit::compile_unit(statement_list *statement_list) : STNode(COMPILE_UNITE_NODE, {statement_list}) { }
+type_specifier::type_specifier(dataType dataType) : STNode(TYPE_SPECIFIER_NODE, {})
+{
+    m_type = dataType;
+}
 
-int compile_unit::evaluate()
+dataType type_specifier::getType()
+{
+    return m_type;
+}
+
+function_call::function_call(IDENTIFIER *IDENTIFIER)
+: STNode(FUNCTION_CALL_NODE, {IDENTIFIER}) { }
+
+function_call::function_call(IDENTIFIER *IDENTIFIER, argument_list *argument_list)
+: STNode(FUNCTION_CALL_NODE, {IDENTIFIER, argument_list}) { }
+
+int function_call::evaluate()
+{
+    std::vector<int> finalValues;
+    auto childs = this -> getChildrenList();
+
+    auto it = childs.begin();
+    std::string func_name = ((IDENTIFIER *) *it) -> getLabel();
+    std::cout << func_name << std::endl; 
+    Symbol *def = SymbolTable::getInstance() -> lookupGlobal(func_name);
+
+    if (!def)
+    {   // Need to make it so the error is emitted from the parser.
+        perror("The function you try to call isn't defined");
+    }
+
+    compound_statement *func_body = (compound_statement *) (def -> getFunctionBody());
+
+    if (!func_body)
+    {   // Need to make it so the error is emitted from the parser.
+        perror("The function you try to call isn't implemented");
+    }
+
+    if (childs.size() == 1) // No arguments
+    {
+        
+    }
+    else // With arguments
+    {
+        it++;
+        auto expressions = ((argument_list *) (*it)) -> getArguments();
+
+        for (auto expr : expressions)
+        {
+            finalValues.push_back(expr -> evaluate());
+        }
+    }
+
+    // Here it should do the type check as well!
+    std::vector<parameter> &func_params = def -> getParameters();
+    if (func_params.size() != finalValues.size())
+    {   // Need to make it so the error is emitted from the parser.
+        perror("The function you try to call dose not have the same arguments as parameters that are defined");
+    }
+
+    SymbolTable::getInstance() -> enterScope();
+
+    for (size_t i = 0; i < func_params.size(); i++)
+    {
+        Symbol param;
+        param.setName(func_params[i].name);
+        param.setType(func_params[i].type);
+        param.setValue(finalValues[i]);
+
+        SymbolTable::getInstance() -> insert(param);
+    }
+    
+    try
+    {
+        func_body -> evaluate();
+    }
+    catch (int returnValue)
+    {
+        SymbolTable::getInstance() -> exitScope();
+        return returnValue;
+    }
+    
+    SymbolTable::getInstance() -> exitScope();
+    if (def -> getType() != T_VOID)
+    {   // Semantic-error
+        std::cout << "Non-void functions should return a value" << std::endl; 
+    }
+
+    return 0;
+}
+
+function_definition::function_definition(type_specifier *type_specifier, IDENTIFIER *IDENTIFIER,  parameter_list *parameter_list, compound_statement *compound_statement)
+: STNode(FUNCTION_DEFINITION_NODE, {type_specifier, IDENTIFIER, parameter_list, compound_statement}) { }
+
+function_declaration::function_declaration(type_specifier *type_specifier, IDENTIFIER *IDENTIFIER, parameter_list *parameter_list)
+: STNode(FUNCTION_DECLARATION_NODE, {type_specifier, IDENTIFIER, parameter_list}) { }
+
+argument_list::argument_list(expression *expression)
+: STNode(ARGUMENT_LIST_NODE, {expression}) { }
+
+void argument_list::add(STNode *expression)
+{
+    arguments.push_back(expression);
+}
+
+std::vector<STNode *> argument_list::getArguments()
+{
+   return arguments;
+}
+
+parameter_list::parameter_list(type_specifier *type_specifier, IDENTIFIER *IDENTIFIER)
+: STNode(PARAMETER_LIST_NODE, {type_specifier, IDENTIFIER})
+{ 
+    this->add(type_specifier->getType(), IDENTIFIER->getLabel());
+}
+
+parameter_list::parameter_list() : STNode(PARAMETER_LIST_NODE, {}) {}
+
+void parameter_list::add(dataType type, std::string name)
+{
+    parameters.push_back({type, name});
+}
+
+std::vector<parameter> parameter_list::getParameters()
+{
+    return parameters;
+}
+
+external_declaration::external_declaration(function_declaration *function_declaration)
+: STNode(EXTERNAL_DECLARATION_NODE, {function_declaration}) { }
+
+external_declaration::external_declaration(function_definition *function_definition)
+: STNode(EXTERNAL_DECLARATION_NODE, {function_definition}) { }
+
+external_declaration::external_declaration(variable_declaration_statement *variable_declaration_statement)
+: STNode(EXTERNAL_DECLARATION_NODE, {variable_declaration_statement}) { }
+
+translation_unit::translation_unit(translation_unit *translation_unit, external_declaration *external_declaration)
+: STNode(TRANSLATION_UNIT_NODE, {translation_unit, external_declaration}) { }
+
+translation_unit::translation_unit(external_declaration *external_declaration)
+: STNode(TRANSLATION_UNIT_NODE, {external_declaration}) { }
+
+return_node::return_node(expression *expression) : STNode (RETURN_NODE, {expression}) { }
+
+int return_node::evaluate()
+{
+    auto it = this -> getChildrenList().begin();
+
+    throw ((*it) -> evaluate()); 
+}
+
+program::program(translation_unit *translation_unit) : STNode(PROGRAM_NODE, {translation_unit}) { }
+
+int program::evaluate()
 {
     auto it = this -> getChildrenList().begin();
 

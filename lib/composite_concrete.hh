@@ -1,9 +1,12 @@
 #pragma once
+
 #ifndef CONCRETE_
 #define CONCRETE_
 
+#include "symbol_table.hh"
 #include "composite.hh"
 #include <string>
+#include <vector>
 
 class if_statement;
 class compound_statement;
@@ -32,22 +35,23 @@ class IDENTIFIER : public STNode
 {
 private:
     std::string m_label;
-    int m_value;
-    // union value
-    // {
-	//     int i;
-	//     double d;
-    // } m_value;
-    // // Isws tha prepei na exw kai mia trith timh dioti kalo einai na mhn ginetai 2 fores set?? mporei  
-    // enum valueType { INT, DOUBLE } m_valueType;
 public:
     IDENTIFIER(std::string str);
     
-    void setValue(int value);
-    int getValue();
+    std::string getLabel();
 
     std::string getGraphvizLabel() override;
     int evaluate() override;
+};
+
+class type_specifier : public STNode
+{
+private:
+    dataType m_type;
+public:
+    type_specifier(dataType type);
+
+    dataType getType();
 };
 
 class expression : public STNode
@@ -185,6 +189,40 @@ public:
     int evaluate() override;
 };
 
+class variable_declaration : public STNode
+{
+private:
+    std::string m_name;
+    int m_value;
+public:
+    variable_declaration(IDENTIFIER *IDENTIFIER);
+    variable_declaration(IDENTIFIER *IDENTIFIER, expression *expression);
+
+    int evaluate() override;
+    std::string getName();
+    int getValue();
+};
+
+class variable_declaration_list : public STNode
+{
+private:
+    std::vector<variable_declaration *> m_vars;
+
+public:
+    variable_declaration_list(variable_declaration *variable_declaration);
+
+    std::vector<variable_declaration *>& getVariables();
+    void add(variable_declaration *variable_declaration);
+};
+
+class variable_declaration_statement : public STNode
+{
+public:
+    variable_declaration_statement(type_specifier *type_specifier, variable_declaration_list *variable_declaration_list);
+
+    int evaluate() override;
+};
+
 class compound_statement : public STNode
 {
 public:
@@ -230,10 +268,80 @@ public:
     int evaluate() override;
 };
 
-class compile_unit : public STNode
+class argument_list : public STNode
+{
+private:
+    std::vector<STNode *> arguments;
+
+public:
+    argument_list(expression *expression);
+
+    void add(STNode *expression);
+    std::vector<STNode *> getArguments();
+};
+
+class parameter_list : public STNode
+{
+private:
+    std::vector<parameter> parameters;
+
+public:
+    parameter_list(type_specifier *type_specifier, IDENTIFIER *IDENTIFIER);
+    parameter_list();
+
+    void add(dataType type, std::string name);
+    std::vector<parameter> getParameters();
+};
+
+class function_call : public STNode
 {
 public:
-    compile_unit(statement_list *statement_list);
+    function_call(IDENTIFIER *IDENTIFIER);
+    function_call(IDENTIFIER *IDENTIFIER, argument_list *argument_list);
+
+    int evaluate() override;
+};
+
+class function_definition : public STNode
+{
+public:
+    function_definition(type_specifier *type_specifier, IDENTIFIER *IDENTIFIER, parameter_list *parameter_list, compound_statement *compound_statement);
+};
+
+class function_declaration : public STNode
+{
+public:
+    function_declaration(type_specifier *type_specifier, IDENTIFIER *IDENTIFIER, parameter_list *parameter_list);
+};
+
+class external_declaration : public STNode
+{
+public:
+    external_declaration(function_declaration *function_declaration);
+    external_declaration(function_definition *function_definition);
+    external_declaration(variable_declaration_statement *variable_declaration_statement);
+};
+
+class translation_unit : public STNode
+{
+public:
+    translation_unit(translation_unit *translation_unit, external_declaration *external_declaration);
+    translation_unit(external_declaration *external_declaration);
+};
+
+class return_node : public STNode
+{
+public:
+    return_node(expression *expression);
+
+    int evaluate() override;
+};
+
+
+class program : public STNode
+{
+public:
+    program(translation_unit *translation_unit);
 
     int evaluate() override;
 };

@@ -31,8 +31,33 @@ int main(int argc, char *argv[])
     (*dot) << "}";
     dot -> close();
     
-    // Evaluating
-    g_root -> evaluate();
+    Symbol *entry = SymbolTable::getInstance() -> lookupGlobal("main");
+    
+    if (entry == nullptr)
+    {   // Wanna be linker error XD
+        std::cout << "Error: Linker error - undefined reference to 'main'" << std::endl;
+    }
+    else
+    {
+        try
+        {
+            SymbolTable::getInstance() -> enterScope(); // Main scope
+            entry -> getFunctionBody() -> evaluate();
+        }
+        catch (int mainReturn)
+        {
+            if (!mainReturn)
+            {
+                std::cout << "Super!" << std::endl;
+            }
+            else
+            {
+                std::cout << "Not Super" << std::endl;
+            }
+
+            SymbolTable::getInstance() -> exitScope();
+        }
+    }
 
     return 0;
 }
