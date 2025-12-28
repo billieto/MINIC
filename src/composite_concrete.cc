@@ -7,8 +7,6 @@
 #include <sys/types.h>
 #include <vector>
 
-dataType currentType;
-
 NUMBER::NUMBER(int value) : STNode(NUMBER_NODE, {})
 {
     m_value.i = value;
@@ -23,7 +21,7 @@ NUMBER::NUMBER(double value) : STNode(NUMBER_NODE, {})
 
 std::string NUMBER::getGraphvizLabel()
 {
-    std:: string temp = STNode::getGraphvizLabel() + "=";
+    std::string temp = STNode::getGraphvizLabel() + "=";
     if (m_valueType == INT)
     {
         temp += std::to_string(m_value.i);
@@ -35,20 +33,14 @@ std::string NUMBER::getGraphvizLabel()
     return temp;
 }
 
-int NUMBER::evaluate()
-{
-    return m_value.i;
-}
+int NUMBER::evaluate() { return m_value.i; }
 
 IDENTIFIER::IDENTIFIER(std::string str) : STNode(IDENTIFIER_NODE, {})
 {
     m_label = str;
 }
 
-std::string IDENTIFIER::getLabel()
-{
-    return m_label;
-}
+std::string IDENTIFIER::getLabel() { return m_label; }
 
 std::string IDENTIFIER::getGraphvizLabel()
 {
@@ -57,7 +49,7 @@ std::string IDENTIFIER::getGraphvizLabel()
 
 int IDENTIFIER::evaluate()
 {
-    Symbol *sym = SymbolTable::getInstance() -> lookup(this->m_label); 
+    Symbol *sym = SymbolTable::getInstance()->lookup(this->m_label);
 
     if (!sym)
     {
@@ -65,220 +57,272 @@ int IDENTIFIER::evaluate()
         exit(1);
     }
 
-    return sym -> getValue();
+    return sym->getValue();
 }
 
-expression::expression(NUMBER *NUMBER) : STNode(EXPRESSION_NODE, {NUMBER}) { }
+expression::expression(NUMBER *NUMBER) : STNode(EXPRESSION_NODE, {NUMBER}) {}
 
-expression::expression(IDENTIFIER *IDENTIFIER) : STNode(EXPRESSION_NODE, {IDENTIFIER}) { }
+expression::expression(IDENTIFIER *IDENTIFIER)
+    : STNode(EXPRESSION_NODE, {IDENTIFIER})
+{
+}
 
-multiplication::multiplication(expression *left, expression *right) : STNode(MULTIPLICATION_NODE, {left, right}) { }
+multiplication::multiplication(expression *left, expression *right)
+    : STNode(MULTIPLICATION_NODE, {left, right})
+{
+}
 
 int multiplication::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
     STNode *leftNode = *it;
     it++;
     STNode *rightNode = *it;
 
-    return leftNode -> evaluate() * rightNode -> evaluate();
+    return leftNode->evaluate() * rightNode->evaluate();
 }
 
-division::division(expression *left, expression *right) : STNode(DIVISION_NODE, {left, right}) { }
+division::division(expression *left, expression *right)
+    : STNode(DIVISION_NODE, {left, right})
+{
+}
 
 int division::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
     STNode *leftNode = *it;
     it++;
     STNode *rightNode = *it;
 
-    return leftNode -> evaluate() / rightNode -> evaluate();
+    return leftNode->evaluate() / rightNode->evaluate();
 }
 
-addition::addition(expression *left, expression *right) : STNode(ADDITION_NODE, {left, right}) { }
+addition::addition(expression *left, expression *right)
+    : STNode(ADDITION_NODE, {left, right})
+{
+}
 
 int addition::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
     STNode *leftNode = *it;
     it++;
     STNode *rightNode = *it;
 
-    return leftNode -> evaluate() + rightNode -> evaluate();
+    return leftNode->evaluate() + rightNode->evaluate();
 }
 
-subtraction::subtraction(expression *left, expression *right) : STNode(SUBTRACTION_NODE, {left, right}) { }
+subtraction::subtraction(expression *left, expression *right)
+    : STNode(SUBTRACTION_NODE, {left, right})
+{
+}
 
 int subtraction::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
     STNode *leftNode = *it;
     it++;
     STNode *rightNode = *it;
 
-    return leftNode -> evaluate() - rightNode -> evaluate();
+    return leftNode->evaluate() - rightNode->evaluate();
 }
 
-less::less(expression *left, expression *right) : STNode(LESS_NODE ,{left, right}) {}
+less::less(expression *left, expression *right)
+    : STNode(LESS_NODE, {left, right})
+{
+}
 
 int less::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
     STNode *leftNode = *it;
     it++;
     STNode *rightNode = *it;
 
-    return leftNode -> evaluate() < rightNode -> evaluate();
+    return leftNode->evaluate() < rightNode->evaluate();
 }
 
-
-less_equals::less_equals(expression *left, expression *right) : STNode(LESS_EQUALS_NODE ,{left, right}) {}
+less_equals::less_equals(expression *left, expression *right)
+    : STNode(LESS_EQUALS_NODE, {left, right})
+{
+}
 
 int less_equals::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
     STNode *leftNode = *it;
     it++;
     STNode *rightNode = *it;
 
-    return leftNode -> evaluate() <= rightNode -> evaluate();
+    return leftNode->evaluate() <= rightNode->evaluate();
 }
 
-greater::greater(expression *left, expression *right) : STNode(GREATER_EQUALS_NODE ,{left, right}) {}
+greater::greater(expression *left, expression *right)
+    : STNode(GREATER_EQUALS_NODE, {left, right})
+{
+}
 
 int greater::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
     STNode *leftNode = *it;
     it++;
     STNode *rightNode = *it;
 
-    return leftNode -> evaluate() > rightNode -> evaluate();
+    return leftNode->evaluate() > rightNode->evaluate();
 }
 
-greater_equals::greater_equals(expression *left, expression *right) : STNode(GREATER_EQUALS_NODE ,{left, right}) {}
+greater_equals::greater_equals(expression *left, expression *right)
+    : STNode(GREATER_EQUALS_NODE, {left, right})
+{
+}
 
 int greater_equals::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
     STNode *leftNode = *it;
     it++;
     STNode *rightNode = *it;
 
-    return leftNode -> evaluate() >= rightNode -> evaluate();
+    return leftNode->evaluate() >= rightNode->evaluate();
 }
 
-logic_equals::logic_equals(expression *left, expression *right) : STNode(LOGIC_EQUALS_NODE ,{left, right}) {}
+logic_equals::logic_equals(expression *left, expression *right)
+    : STNode(LOGIC_EQUALS_NODE, {left, right})
+{
+}
 
 int logic_equals::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
     STNode *leftNode = *it;
     it++;
     STNode *rightNode = *it;
 
-    return leftNode -> evaluate() == rightNode -> evaluate();
+    return leftNode->evaluate() == rightNode->evaluate();
 }
 
-logic_not_equals::logic_not_equals(expression *left, expression *right) : STNode(LOGIC_NOT_EQUALS_NODE ,{left, right}) {}
+logic_not_equals::logic_not_equals(expression *left, expression *right)
+    : STNode(LOGIC_NOT_EQUALS_NODE, {left, right})
+{
+}
 
 int logic_not_equals::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
     STNode *leftNode = *it;
     it++;
     STNode *rightNode = *it;
 
-    return leftNode -> evaluate() != rightNode -> evaluate();
+    return leftNode->evaluate() != rightNode->evaluate();
 }
 
-logic_and::logic_and(expression *left, expression *right) : STNode(LOGIC_AND_NODE ,{left, right}) {}
+logic_and::logic_and(expression *left, expression *right)
+    : STNode(LOGIC_AND_NODE, {left, right})
+{
+}
 
 int logic_and::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
     STNode *leftNode = *it;
     it++;
     STNode *rightNode = *it;
 
-    return leftNode -> evaluate() && rightNode -> evaluate();
+    return leftNode->evaluate() && rightNode->evaluate();
 }
 
-logic_or::logic_or(expression *left, expression *right) : STNode(LOGIC_OR_NODE ,{left, right}) {}
+logic_or::logic_or(expression *left, expression *right)
+    : STNode(LOGIC_OR_NODE, {left, right})
+{
+}
 
 int logic_or::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
     STNode *leftNode = *it;
     it++;
     STNode *rightNode = *it;
 
-    return leftNode -> evaluate() || rightNode -> evaluate();
+    return leftNode->evaluate() || rightNode->evaluate();
 }
 
-logic_not::logic_not(expression *expression) : STNode(LOGIC_NOT_NODE ,{expression}) {}
+logic_not::logic_not(expression *expression)
+    : STNode(LOGIC_NOT_NODE, {expression})
+{
+}
 
 int logic_not::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
-    return !((*it) -> evaluate());
+    auto it = this->getChildrenList().begin();
+    return !((*it)->evaluate());
 }
 
-increment::increment(expression *expression) : STNode(INCREMENT_NODE ,{expression}) { }
+increment::increment(expression *expression)
+    : STNode(INCREMENT_NODE, {expression})
+{
+}
 
 int increment::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
-    int temp = (*it) -> evaluate();
+    auto it = this->getChildrenList().begin();
+    int temp = (*it)->evaluate();
     return (temp + 1);
 }
 
-decrement::decrement(expression *expression) : STNode(DECREMENT_NODE ,{expression}) { }
+decrement::decrement(expression *expression)
+    : STNode(DECREMENT_NODE, {expression})
+{
+}
 
 int decrement::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
-    int temp = (*it) -> evaluate();
+    auto it = this->getChildrenList().begin();
+    int temp = (*it)->evaluate();
     return (temp - 1);
 }
 
-assignment::assignment(IDENTIFIER *IDENTIFIER, expression *expression) : STNode(ASSIGNMENT_NODE, {IDENTIFIER, expression}) { }
+assignment::assignment(IDENTIFIER *IDENTIFIER, expression *expression)
+    : STNode(ASSIGNMENT_NODE, {IDENTIFIER, expression})
+{
+}
 
 int assignment::evaluate()
 {
-    auto it = this -> STNode::getChildrenList().begin();
-    
-    std::string name = ((IDENTIFIER *) (*it)) -> getLabel();
-    Symbol *sym = SymbolTable::getInstance() -> lookup(name);
+    auto it = this->STNode::getChildrenList().begin();
+
+    std::string name = ((IDENTIFIER *)(*it))->getLabel();
+    Symbol *sym = SymbolTable::getInstance()->lookup(name);
 
     if (!sym)
     {
-        sym = SymbolTable::getInstance() -> lookupGlobal(name);
-        if (!sym || sym ->getIsFunction())
+        sym = SymbolTable::getInstance()->lookupGlobal(name);
+        if (!sym || sym->getIsFunction())
         {
-            std::cerr << "Variable: \"" << name << "\" is not declared" << std::endl;
+            std::cerr << "Variable: \"" << name << "\" is not declared"
+                      << std::endl;
             exit(1);
         }
     }
 
     it++;
-    int result = (*it) -> evaluate();
-    sym -> setValue(result);
+    int result = (*it)->evaluate();
+    sym->setValue(result);
 
     // Debug print
     std::cout << name << "=" << std::to_string(result) << std::endl;
-    
-    return sym -> getValue();
+
+    return sym->getValue();
 }
 
-variable_declaration_list::variable_declaration_list(variable_declaration *variable_declaration)
-: STNode(VARIABLE_DECLARATION_LIST_NODE, {variable_declaration})
+variable_declaration_list::variable_declaration_list(
+    variable_declaration *variable_declaration)
+    : STNode(VARIABLE_DECLARATION_LIST_NODE, {variable_declaration})
 {
     m_vars.push_back(variable_declaration);
 }
 
-std::vector<variable_declaration *>& variable_declaration_list::getVariables()
+std::vector<variable_declaration *> &variable_declaration_list::getVariables()
 {
     return m_vars;
 }
@@ -288,31 +332,38 @@ void variable_declaration_list::add(variable_declaration *variable_declaration)
     m_vars.push_back(variable_declaration);
 }
 
-variable_declaration_statement::variable_declaration_statement(type_specifier *type_specifier, variable_declaration_list *variable_declaration_list)
-: STNode(VARIABLE_DECLARATION_STATEMENT_NODE, {type_specifier, variable_declaration_list}) { }
+variable_declaration_statement::variable_declaration_statement(
+    type_specifier *type_specifier,
+    variable_declaration_list *variable_declaration_list)
+    : STNode(VARIABLE_DECLARATION_STATEMENT_NODE,
+             {type_specifier, variable_declaration_list})
+{
+}
 
 int variable_declaration_statement::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
 
-    dataType currentType = ((type_specifier *) (*it)) -> getType();
+    dataType currentType = ((type_specifier *)(*it))->getType();
 
     it++;
-    std::vector<variable_declaration *> varList = ((variable_declaration_list *) (*it)) -> getVariables();
+    std::vector<variable_declaration *> varList =
+        ((variable_declaration_list *)(*it))->getVariables();
 
     for (auto var : varList)
     {
-        var -> evaluate();
+        var->evaluate();
 
         Symbol sym;
         sym.setType(currentType);
-        sym.setName(var -> getName());
-        sym.setValue(var -> getValue());
+        sym.setName(var->getName());
+        sym.setValue(var->getValue());
         sym.setIsFunction(false);
 
         if (!SymbolTable::getInstance()->insert(sym))
-        {   // Semantic Error
-            std::cerr << "Variable " << sym.getName() << " already exists." << std::endl;
+        { // Semantic Error
+            std::cerr << "Variable " << sym.getName() << " already exists."
+                      << std::endl;
         }
     }
 
@@ -320,174 +371,207 @@ int variable_declaration_statement::evaluate()
 }
 
 variable_declaration::variable_declaration(IDENTIFIER *IDENTIFIER)
-: STNode(VARIABLE_DECLARATION_NODE, {IDENTIFIER}) { }
+    : STNode(VARIABLE_DECLARATION_NODE, {IDENTIFIER})
+{
+}
 
-variable_declaration::variable_declaration(IDENTIFIER *IDENTIFIER, expression *expression)
-: STNode(VARIABLE_DECLARATION_NODE, {IDENTIFIER, expression}) { }
+variable_declaration::variable_declaration(IDENTIFIER *IDENTIFIER,
+                                           expression *expression)
+    : STNode(VARIABLE_DECLARATION_NODE, {IDENTIFIER, expression})
+{
+}
 
 int variable_declaration::evaluate()
 {
-    auto &temp = this -> getChildrenList();
+    auto &temp = this->getChildrenList();
 
     auto it = temp.begin();
-    m_name = ((IDENTIFIER *) (*it)) -> getLabel();
+    m_name = ((IDENTIFIER *)(*it))->getLabel();
 
-    if (temp.size() >1)
+    if (temp.size() > 1)
     {
         it++;
-        m_value = (*it) -> evaluate();
+        m_value = (*it)->evaluate();
     }
 
     return m_value;
 }
 
-std::string variable_declaration::getName()
+std::string variable_declaration::getName() { return m_name; }
+
+int variable_declaration::getValue() { return m_value; }
+
+statement::statement(if_statement *if_statement)
+    : STNode(STATEMENT_NODE, {if_statement})
 {
-    return m_name;
 }
 
-int variable_declaration::getValue()
+statement::statement(expression *expression)
+    : STNode(STATEMENT_NODE, {expression})
 {
-    return m_value;
 }
 
-statement::statement(if_statement *if_statement) : STNode(STATEMENT_NODE, {if_statement}) { }
-
-statement::statement(expression *expression) : STNode(STATEMENT_NODE, {expression}) { }
-
-statement::statement(compound_statement *compound_statement) : STNode(COMPMOUNT_STATEMENT_NODE, {compound_statement}) { }
+statement::statement(compound_statement *compound_statement)
+    : STNode(COMPMOUNT_STATEMENT_NODE, {compound_statement})
+{
+}
 
 int statement::evaluate()
 {
-    auto it = this -> getChildrenList().begin(); // NA KOITA3W NA DW DIAFORA ME BEGIN KAI SKETO GET METHOD
+    auto it = this->getChildrenList().begin();
 
-    return (*it) -> evaluate(); 
+    return (*it)->evaluate();
 }
 
-statement_list::statement_list(statement_list *statement_list, statement *statement) : STNode(STATEMENT_LIST_NODE, {statement_list, statement}) { }
+statement_list::statement_list(statement_list *statement_list,
+                               statement *statement)
+    : STNode(STATEMENT_LIST_NODE, {statement_list, statement})
+{
+}
 
-statement_list::statement_list(statement *statement) : STNode(STATEMENT_LIST_NODE, {statement}) { }
+statement_list::statement_list(statement *statement)
+    : STNode(STATEMENT_LIST_NODE, {statement})
+{
+}
 
 int statement_list::evaluate()
 {
     int result = 0;
 
-    for (const auto &child : this -> getChildrenList())
+    for (const auto &child : this->getChildrenList())
     {
-        result += child -> evaluate();
+        result += child->evaluate();
     }
 
     return result;
 }
 
-compound_statement::compound_statement(statement_list *statement_list) : STNode(COMPMOUNT_STATEMENT_NODE, {statement_list}) { }
+compound_statement::compound_statement(statement_list *statement_list)
+    : STNode(COMPMOUNT_STATEMENT_NODE, {statement_list})
+{
+}
 
-compound_statement::compound_statement() : STNode(COMPMOUNT_STATEMENT_NODE, {}) { }
+compound_statement::compound_statement() : STNode(COMPMOUNT_STATEMENT_NODE, {})
+{
+}
 
 int compound_statement::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
 
-    return (*it) -> evaluate();
+    return (*it)->evaluate();
 }
 
-condition::condition(expression *expression) : STNode(CONDITION_NODE, {expression}) { }
+condition::condition(expression *expression)
+    : STNode(CONDITION_NODE, {expression})
+{
+}
 
 int condition::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
 
-    return (*it) -> evaluate();
+    return (*it)->evaluate();
 }
 
 if_statement::if_statement(condition *condition, statement_list *statement_list)
-: STNode(IF_STATEMENT_NODE, {condition, statement_list}) { }
+    : STNode(IF_STATEMENT_NODE, {condition, statement_list})
+{
+}
 
-if_statement::if_statement(condition *condition, statement_list *statement_list1, statement_list *statement_list2)
-: STNode(IF_STATEMENT_NODE, {condition, statement_list1, statement_list2}) { }
+if_statement::if_statement(condition *condition,
+                           statement_list *statement_list1,
+                           statement_list *statement_list2)
+    : STNode(IF_STATEMENT_NODE, {condition, statement_list1, statement_list2})
+{
+}
 
 int if_statement::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
-    int cond = (*it) -> evaluate();
+    auto it = this->getChildrenList().begin();
+    int cond = (*it)->evaluate();
     int result = 0;
 
     if (cond)
     {
         it++;
-        result = (*it) -> evaluate();
+        result = (*it)->evaluate();
     }
-    else if (it != this -> getChildrenList().end())
+    else if (it != this->getChildrenList().end())
     {
-        ++++it;
-        result = (*it) -> evaluate();
+        ++ ++it;
+        result = (*it)->evaluate();
     }
 
     std::cout << result << std::endl;
     return result;
 }
 
-type_specifier::type_specifier(dataType dataType) : STNode(TYPE_SPECIFIER_NODE, {})
+type_specifier::type_specifier(dataType dataType)
+    : STNode(TYPE_SPECIFIER_NODE, {})
 {
     m_type = dataType;
 }
 
-dataType type_specifier::getType()
-{
-    return m_type;
-}
+dataType type_specifier::getType() { return m_type; }
 
 function_call::function_call(IDENTIFIER *IDENTIFIER)
-: STNode(FUNCTION_CALL_NODE, {IDENTIFIER}) { }
+    : STNode(FUNCTION_CALL_NODE, {IDENTIFIER})
+{
+}
 
-function_call::function_call(IDENTIFIER *IDENTIFIER, argument_list *argument_list)
-: STNode(FUNCTION_CALL_NODE, {IDENTIFIER, argument_list}) { }
+function_call::function_call(IDENTIFIER *IDENTIFIER,
+                             argument_list *argument_list)
+    : STNode(FUNCTION_CALL_NODE, {IDENTIFIER, argument_list})
+{
+}
 
 int function_call::evaluate()
 {
     std::vector<int> finalValues;
-    auto childs = this -> getChildrenList();
+    auto childs = this->getChildrenList();
 
     auto it = childs.begin();
-    std::string func_name = ((IDENTIFIER *) *it) -> getLabel();
-    std::cout << func_name << std::endl; 
-    Symbol *def = SymbolTable::getInstance() -> lookupGlobal(func_name);
+    std::string func_name = ((IDENTIFIER *)*it)->getLabel();
+    std::cout << func_name << std::endl;
+    Symbol *def = SymbolTable::getInstance()->lookupGlobal(func_name);
 
     if (!def)
-    {   // Need to make it so the error is emitted from the parser.
+    { // Need to make it so the error is emitted from the parser.
         perror("The function you try to call isn't defined");
     }
 
-    compound_statement *func_body = (compound_statement *) (def -> getFunctionBody());
+    compound_statement *func_body =
+        (compound_statement *)(def->getFunctionBody());
 
     if (!func_body)
-    {   // Need to make it so the error is emitted from the parser.
+    { // Need to make it so the error is emitted from the parser.
         perror("The function you try to call isn't implemented");
     }
 
     if (childs.size() == 1) // No arguments
     {
-        
     }
     else // With arguments
     {
         it++;
-        auto expressions = ((argument_list *) (*it)) -> getArguments();
+        auto expressions = ((argument_list *)(*it))->getArguments();
 
         for (auto expr : expressions)
         {
-            finalValues.push_back(expr -> evaluate());
+            finalValues.push_back(expr->evaluate());
         }
     }
 
     // Here it should do the type check as well!
-    std::vector<parameter> &func_params = def -> getParameters();
+    std::vector<parameter> &func_params = def->getParameters();
     if (func_params.size() != finalValues.size())
-    {   // Need to make it so the error is emitted from the parser.
-        perror("The function you try to call dose not have the same arguments as parameters that are defined");
+    { // Need to make it so the error is emitted from the parser.
+        perror("The function you try to call dose not have the same arguments "
+               "as parameters that are defined");
     }
 
-    SymbolTable::getInstance() -> enterScope();
+    SymbolTable::getInstance()->enterScope();
 
     for (size_t i = 0; i < func_params.size(); i++)
     {
@@ -496,50 +580,59 @@ int function_call::evaluate()
         param.setType(func_params[i].type);
         param.setValue(finalValues[i]);
 
-        SymbolTable::getInstance() -> insert(param);
+        SymbolTable::getInstance()->insert(param);
     }
-    
+
     try
     {
-        func_body -> evaluate();
+        func_body->evaluate();
     }
     catch (int returnValue)
     {
-        SymbolTable::getInstance() -> exitScope();
+        SymbolTable::getInstance()->exitScope();
         return returnValue;
     }
-    
-    SymbolTable::getInstance() -> exitScope();
-    if (def -> getType() != T_VOID)
-    {   // Semantic-error
-        std::cout << "Non-void functions should return a value" << std::endl; 
+
+    SymbolTable::getInstance()->exitScope();
+    if (def->getType() != T_VOID)
+    { // Semantic-error
+        std::cout << "Non-void functions should return a value" << std::endl;
     }
 
     return 0;
 }
 
-function_definition::function_definition(type_specifier *type_specifier, IDENTIFIER *IDENTIFIER,  parameter_list *parameter_list, compound_statement *compound_statement)
-: STNode(FUNCTION_DEFINITION_NODE, {type_specifier, IDENTIFIER, parameter_list, compound_statement}) { }
+function_definition::function_definition(type_specifier *type_specifier,
+                                         IDENTIFIER *IDENTIFIER,
+                                         parameter_list *parameter_list,
+                                         compound_statement *compound_statement)
+    : STNode(FUNCTION_DEFINITION_NODE,
+             {type_specifier, IDENTIFIER, parameter_list, compound_statement})
+{
+}
 
-function_declaration::function_declaration(type_specifier *type_specifier, IDENTIFIER *IDENTIFIER, parameter_list *parameter_list)
-: STNode(FUNCTION_DECLARATION_NODE, {type_specifier, IDENTIFIER, parameter_list}) { }
+function_declaration::function_declaration(type_specifier *type_specifier,
+                                           IDENTIFIER *IDENTIFIER,
+                                           parameter_list *parameter_list)
+    : STNode(FUNCTION_DECLARATION_NODE,
+             {type_specifier, IDENTIFIER, parameter_list})
+{
+}
 
 argument_list::argument_list(expression *expression)
-: STNode(ARGUMENT_LIST_NODE, {expression}) { }
-
-void argument_list::add(STNode *expression)
+    : STNode(ARGUMENT_LIST_NODE, {expression})
 {
-    arguments.push_back(expression);
+    add(expression);
 }
 
-std::vector<STNode *> argument_list::getArguments()
-{
-   return arguments;
-}
+void argument_list::add(STNode *expression) { arguments.push_back(expression); }
 
-parameter_list::parameter_list(type_specifier *type_specifier, IDENTIFIER *IDENTIFIER)
-: STNode(PARAMETER_LIST_NODE, {type_specifier, IDENTIFIER})
-{ 
+std::vector<STNode *> argument_list::getArguments() { return arguments; }
+
+parameter_list::parameter_list(type_specifier *type_specifier,
+                               IDENTIFIER *IDENTIFIER)
+    : STNode(PARAMETER_LIST_NODE, {type_specifier, IDENTIFIER})
+{
     this->add(type_specifier->getType(), IDENTIFIER->getLabel());
 }
 
@@ -550,40 +643,57 @@ void parameter_list::add(dataType type, std::string name)
     parameters.push_back({type, name});
 }
 
-std::vector<parameter> parameter_list::getParameters()
+std::vector<parameter> parameter_list::getParameters() { return parameters; }
+
+external_declaration::external_declaration(
+    function_declaration *function_declaration)
+    : STNode(EXTERNAL_DECLARATION_NODE, {function_declaration})
 {
-    return parameters;
 }
 
-external_declaration::external_declaration(function_declaration *function_declaration)
-: STNode(EXTERNAL_DECLARATION_NODE, {function_declaration}) { }
+external_declaration::external_declaration(
+    function_definition *function_definition)
+    : STNode(EXTERNAL_DECLARATION_NODE, {function_definition})
+{
+}
 
-external_declaration::external_declaration(function_definition *function_definition)
-: STNode(EXTERNAL_DECLARATION_NODE, {function_definition}) { }
+external_declaration::external_declaration(
+    variable_declaration_statement *variable_declaration_statement)
+    : STNode(EXTERNAL_DECLARATION_NODE, {variable_declaration_statement})
+{
+}
 
-external_declaration::external_declaration(variable_declaration_statement *variable_declaration_statement)
-: STNode(EXTERNAL_DECLARATION_NODE, {variable_declaration_statement}) { }
-
-translation_unit::translation_unit(translation_unit *translation_unit, external_declaration *external_declaration)
-: STNode(TRANSLATION_UNIT_NODE, {translation_unit, external_declaration}) { }
+translation_unit::translation_unit(translation_unit *translation_unit,
+                                   external_declaration *external_declaration)
+    : STNode(TRANSLATION_UNIT_NODE, {translation_unit, external_declaration})
+{
+}
 
 translation_unit::translation_unit(external_declaration *external_declaration)
-: STNode(TRANSLATION_UNIT_NODE, {external_declaration}) { }
+    : STNode(TRANSLATION_UNIT_NODE, {external_declaration})
+{
+}
 
-return_node::return_node(expression *expression) : STNode (RETURN_NODE, {expression}) { }
+return_node::return_node(expression *expression)
+    : STNode(RETURN_NODE, {expression})
+{
+}
 
 int return_node::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
 
-    throw ((*it) -> evaluate()); 
+    throw((*it)->evaluate());
 }
 
-program::program(translation_unit *translation_unit) : STNode(PROGRAM_NODE, {translation_unit}) { }
+program::program(translation_unit *translation_unit)
+    : STNode(PROGRAM_NODE, {translation_unit})
+{
+}
 
 int program::evaluate()
 {
-    auto it = this -> getChildrenList().begin();
+    auto it = this->getChildrenList().begin();
 
-    return (*it) -> evaluate();
+    return (*it)->evaluate();
 }

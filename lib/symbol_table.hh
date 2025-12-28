@@ -4,8 +4,8 @@
 
 #include "composite.hh"
 #include <string>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 typedef enum
 {
@@ -21,30 +21,29 @@ typedef struct param
     dataType type;
     std::string name;
 
-    // Gemini told me to add them because a vector cant compare, so i should i make a method that sees if the parameters are the same as arguments.
-    bool operator==(const param& other) const
+    // Gemini told me to add them because a vector cant compare, so i should i
+    // make a method that sees if the parameters are the same as arguments.
+    bool operator==(const param &other) const
     {
         return (this->type == other.type) && (this->name == other.name);
     }
-    
-    bool operator!=(const param& other) const
-    {
-        return !(*this == other);
-    }
+
+    bool operator!=(const param &other) const { return !(*this == other); }
 } parameter;
 
 class Symbol
 {
-private:
+  private:
     std::string m_name;
-    dataType m_type;// if its a variable, this shows its type. If its a function, this shows its return value
+    dataType m_type; // if its a variable, this shows its type. If its a
+                     // function, this shows its return value
     int m_value;
 
     bool m_is_function;
     std::vector<parameter> m_params;
     STNode *m_function_body;
 
-public:
+  public:
     Symbol();
     ~Symbol();
 
@@ -58,29 +57,29 @@ public:
     bool getIsFunction();
     std::string getName();
     dataType getType();
-    std::vector<parameter>& getParameters();
+    std::vector<parameter> &getParameters();
     int getValue();
-    STNode* getFunctionBody();
+    STNode *getFunctionBody();
 };
 
 class SymbolTable
 {
-private:
+  private:
     SymbolTable();
 
     static SymbolTable *m_instance;
     std::vector<std::unordered_map<std::string, Symbol>> scopeStack;
 
-public:
+  public:
     ~SymbolTable();
 
-    static SymbolTable* getInstance();
+    static SymbolTable *getInstance();
     void enterScope();
     void exitScope();
     bool insertGlobal(Symbol sym);
     bool insert(Symbol sym);
-    Symbol* lookupGlobal(std::string name);
-	Symbol* lookup(std::string name);
+    Symbol *lookupGlobal(std::string name);
+    Symbol *lookup(std::string name);
 };
 
 #endif

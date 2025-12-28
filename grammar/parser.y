@@ -173,10 +173,7 @@ parameter_list:
 
 		((parameter_list *) $$) -> add(((type_specifier *) $3) -> getType(), ((IDENTIFIER *) $4) -> getLabel());
 	}
-|	type_specifier IDENTIFIER
-	{
-		$$ = new parameter_list((type_specifier *) $1, (IDENTIFIER *) $2);
-	}
+|	type_specifier IDENTIFIER { $$ = new parameter_list((type_specifier *) $1, (IDENTIFIER *) $2); }
 ;
 
 // Arguments for function calls
@@ -187,12 +184,7 @@ argument_list:
 
 		((argument_list *) $$) -> add($3);
 	}
-|	expression
-	{
-		$$ = new argument_list((expression *) $1);
-
-		((argument_list *) $$) -> add($1);
-	}
+|	expression { $$ = new argument_list((expression *) $1); }
 ;
 
 // Compound statement for functions, loops, etc.

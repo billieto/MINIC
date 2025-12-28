@@ -2,9 +2,9 @@
 #ifndef COMPOSITE_
 #define COMPOSITE_
 
-#include <string>
 #include <list>
-//#include <memory>
+#include <string>
+// #include <memory>
 
 typedef enum nodeType
 {
@@ -64,32 +64,33 @@ typedef enum nodeType
 //     Value();
 // };
 
-class STNode 
+class STNode
 {
-private:
+  private:
     nodeType m_nodeType;
     std::string m_graphvizLabel;
     int m_serial;
     static int m_serialCounter;
-    //std::list<std::unique_ptr<STNode>> m_children;
+    // std::list<std::unique_ptr<STNode>> m_children;
     std::list<STNode *> m_children;
     STNode *m_parent;
-public:
+
+  public:
     STNode(nodeType nodeType, std::initializer_list<STNode *> children);
     virtual ~STNode()
     {
-        for (STNode* child : m_children)
+        for (STNode *child : m_children)
         {
             delete child;
         }
-    
+
         m_children.clear();
     }
 
     nodeType getNodeType();
     void setParent(STNode *parent);
     void printSyntaxTree(std::ofstream *dot);
-    std::list<STNode *>& getChildrenList();
+    std::list<STNode *> &getChildrenList();
 
     virtual std::string getGraphvizLabel();
     virtual int evaluate();

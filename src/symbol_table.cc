@@ -2,9 +2,9 @@
 #include <string>
 #include <vector>
 
-SymbolTable* SymbolTable::m_instance = nullptr;
+SymbolTable *SymbolTable::m_instance = nullptr;
 
-SymbolTable::SymbolTable() { }
+SymbolTable::SymbolTable() {}
 
 SymbolTable::~SymbolTable()
 {
@@ -12,10 +12,7 @@ SymbolTable::~SymbolTable()
     delete m_instance;
 }
 
-void SymbolTable::enterScope()
-{
-    scopeStack.push_back({});
-}
+void SymbolTable::enterScope() { scopeStack.push_back({}); }
 
 void SymbolTable::exitScope()
 {
@@ -53,7 +50,7 @@ bool SymbolTable::insert(Symbol sym)
     return true;
 }
 
-Symbol* SymbolTable::lookupGlobal(std::string name)
+Symbol *SymbolTable::lookupGlobal(std::string name)
 {
     auto &globalMap = scopeStack.front();
 
@@ -65,7 +62,7 @@ Symbol* SymbolTable::lookupGlobal(std::string name)
     return nullptr;
 }
 
-Symbol* SymbolTable::lookup(std::string name)
+Symbol *SymbolTable::lookup(std::string name)
 {
     for (int i = scopeStack.size() - 1; i >= 0; i--)
     {
@@ -77,12 +74,12 @@ Symbol* SymbolTable::lookup(std::string name)
     return nullptr;
 }
 
-SymbolTable* SymbolTable::getInstance()
+SymbolTable *SymbolTable::getInstance()
 {
     if (m_instance == nullptr)
     {
         m_instance = new SymbolTable();
-        SymbolTable::getInstance() -> enterScope(); // Initialize Global Scope
+        SymbolTable::getInstance()->enterScope(); // Initialize Global Scope
     }
     return m_instance;
 }
@@ -94,73 +91,37 @@ Symbol::Symbol()
     m_params.clear();
 }
 
-Symbol::~Symbol()
-{ 
-    // if (m_function_body != nullptr)
-    // {
-    //     delete m_function_body; 
-    // }
-}
+Symbol::~Symbol() {}
 
 void Symbol::setParameters(std::vector<parameter> params)
 {
-    for (const auto& param : params)
+    for (const auto &param : params)
     {
         m_params.push_back(param);
     }
 }
 
-void Symbol::setIsFunction(bool is_function)
-{
-    m_is_function = is_function;
-}
+void Symbol::setIsFunction(bool is_function) { m_is_function = is_function; }
 
-void Symbol::setName(std::string name)
-{
-    m_name = name;
-}
+void Symbol::setName(std::string name) { m_name = name; }
 
-void Symbol::setType(dataType type)
-{
-    m_type = type;
-}
+void Symbol::setType(dataType type) { m_type = type; }
 
-void Symbol::setValue(int value)
-{
-    m_value = value;
-}
+void Symbol::setValue(int value) { m_value = value; }
 
 void Symbol::setFunctionBody(STNode *function_body)
 {
     m_function_body = function_body;
 }
 
-std::string Symbol::getName()
-{
-    return m_name;
-}
+std::string Symbol::getName() { return m_name; }
 
-bool Symbol::getIsFunction()
-{
-    return m_is_function;
-}
+bool Symbol::getIsFunction() { return m_is_function; }
 
-dataType Symbol::getType()
-{
-    return m_type;
-}
+dataType Symbol::getType() { return m_type; }
 
-std::vector<parameter>& Symbol::getParameters()
-{
-    return m_params;
-}
+std::vector<parameter> &Symbol::getParameters() { return m_params; }
 
-int Symbol::getValue()
-{
-    return m_value;
-}
+int Symbol::getValue() { return m_value; }
 
-STNode* Symbol::getFunctionBody()
-{
-    return m_function_body;
-}
+STNode *Symbol::getFunctionBody() { return m_function_body; }
