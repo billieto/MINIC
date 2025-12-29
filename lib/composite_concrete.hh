@@ -196,6 +196,102 @@ class assignment : public STNode
     int evaluate() override;
 };
 
+class bit_wise_or : public STNode
+{
+  public:
+    bit_wise_or(expression *left, expression *right);
+
+    int evaluate() override;
+};
+
+class bit_wise_and : public STNode
+{
+  public:
+    bit_wise_and(expression *left, expression *right);
+
+    int evaluate() override;
+};
+
+class bit_wise_xor : public STNode
+{
+  public:
+    bit_wise_xor(expression *left, expression *right);
+
+    int evaluate() override;
+};
+
+class bit_wise_not : public STNode
+{
+  public:
+    bit_wise_not(expression *expression);
+
+    int evaluate() override;
+};
+
+class shift_left : public STNode
+{
+  public:
+    shift_left(expression *left, expression *right);
+
+    int evaluate() override;
+};
+
+class shift_right : public STNode
+{
+  public:
+    shift_right(expression *left, expression *right);
+
+    int evaluate() override;
+};
+
+class plus_assignment : public STNode
+{
+  public:
+    plus_assignment(IDENTIFIER *IDENTIFIER, expression *expression);
+
+    int evaluate() override;
+};
+
+class minus_assignment : public STNode
+{
+  public:
+    minus_assignment(IDENTIFIER *IDENTIFIER, expression *expression);
+
+    int evaluate() override;
+};
+
+class mul_assignment : public STNode
+{
+  public:
+    mul_assignment(IDENTIFIER *IDENTIFIER, expression *expression);
+
+    int evaluate() override;
+};
+
+class div_assignment : public STNode
+{
+  public:
+    div_assignment(IDENTIFIER *IDENTIFIER, expression *expression);
+
+    int evaluate() override;
+};
+
+class mod_assignment : public STNode
+{
+  public:
+    mod_assignment(IDENTIFIER *IDENTIFIER, expression *expression);
+
+    int evaluate() override;
+};
+
+class mod : public STNode
+{
+  public:
+    mod(expression *left, expression *right);
+
+    int evaluate() override;
+};
+
 class variable_declaration : public STNode
 {
   private:

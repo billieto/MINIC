@@ -94,7 +94,14 @@ int division::evaluate()
     it++;
     STNode *rightNode = *it;
 
-    return leftNode->evaluate() / rightNode->evaluate();
+    int result = rightNode->evaluate();
+    if (!result)
+    {
+        std::cerr << "Trying to do a division by 0" << std::endl;
+        exit(1);
+    }
+
+    return leftNode->evaluate() / result;
 }
 
 addition::addition(expression *left, expression *right)
@@ -313,6 +320,278 @@ int assignment::evaluate()
     std::cout << name << "=" << std::to_string(result) << std::endl;
 
     return sym->getValue();
+}
+
+bit_wise_or::bit_wise_or(expression *left, expression *right)
+    : STNode(BIT_WISE_OR_NODE, {left, right})
+{
+}
+
+int bit_wise_or::evaluate()
+{
+    auto it = this->getChildrenList().begin();
+    STNode *leftNode = *it;
+    it++;
+    STNode *rightNode = *it;
+
+    return leftNode->evaluate() | rightNode->evaluate();
+}
+
+bit_wise_and::bit_wise_and(expression *left, expression *right)
+    : STNode(BIT_WISE_AND_NODE, {left, right})
+{
+}
+
+int bit_wise_and::evaluate()
+{
+    auto it = this->getChildrenList().begin();
+    STNode *leftNode = *it;
+    it++;
+    STNode *rightNode = *it;
+
+    return leftNode->evaluate() & rightNode->evaluate();
+}
+
+bit_wise_xor::bit_wise_xor(expression *left, expression *right)
+    : STNode(BIT_WISE_XOR_NODE, {left, right})
+{
+}
+
+int bit_wise_xor::evaluate()
+{
+    auto it = this->getChildrenList().begin();
+    STNode *leftNode = *it;
+    it++;
+    STNode *rightNode = *it;
+
+    return leftNode->evaluate() ^ rightNode->evaluate();
+}
+
+bit_wise_not::bit_wise_not(expression *expression)
+    : STNode(BIT_WISE_NOT_NODE, {expression})
+{
+}
+int bit_wise_not::evaluate()
+{
+    auto it = this->getChildrenList().begin();
+
+    return ~((*it)->evaluate());
+}
+
+shift_left::shift_left(expression *left, expression *right)
+    : STNode(SHIFT_LEFT_NODE, {left, right})
+{
+}
+
+int shift_left::evaluate()
+{
+    auto it = this->getChildrenList().begin();
+    STNode *leftNode = *it;
+    it++;
+    STNode *rightNode = *it;
+
+    return leftNode->evaluate() << rightNode->evaluate();
+}
+
+shift_right::shift_right(expression *left, expression *right)
+    : STNode(SHIFT_RIGHT_NODE, {left, right})
+{
+}
+
+int shift_right::evaluate()
+{
+    auto it = this->getChildrenList().begin();
+    STNode *leftNode = *it;
+    it++;
+    STNode *rightNode = *it;
+
+    return leftNode->evaluate() >> rightNode->evaluate();
+}
+
+plus_assignment::plus_assignment(IDENTIFIER *IDENTIFIER, expression *expression)
+    : STNode(PLUS_ASSIGNMENT_NODE, {IDENTIFIER, expression})
+{
+}
+
+int plus_assignment::evaluate()
+{
+    auto it = this->STNode::getChildrenList().begin();
+
+    std::string name = ((IDENTIFIER *)(*it))->getLabel();
+    Symbol *sym = SymbolTable::getInstance()->lookup(name);
+
+    if (!sym)
+    {
+        sym = SymbolTable::getInstance()->lookupGlobal(name);
+        if (!sym || sym->getIsFunction())
+        {
+            std::cerr << "Variable: \"" << name << "\" is not declared"
+                      << std::endl;
+            exit(1);
+        }
+    }
+
+    it++;
+    int result = (*it)->evaluate();
+    sym->setValue((sym->getValue() + result));
+
+    // Debug print
+    std::cout << name << "=" << std::to_string(sym->getValue()) << std::endl;
+
+    return sym->getValue();
+}
+
+minus_assignment::minus_assignment(IDENTIFIER *IDENTIFIER,
+                                   expression *expression)
+    : STNode(MINUS_ASSIGNMENT_NODE, {IDENTIFIER, expression})
+{
+}
+
+int minus_assignment::evaluate()
+{
+    auto it = this->STNode::getChildrenList().begin();
+
+    std::string name = ((IDENTIFIER *)(*it))->getLabel();
+    Symbol *sym = SymbolTable::getInstance()->lookup(name);
+
+    if (!sym)
+    {
+        sym = SymbolTable::getInstance()->lookupGlobal(name);
+        if (!sym || sym->getIsFunction())
+        {
+            std::cerr << "Variable: \"" << name << "\" is not declared"
+                      << std::endl;
+            exit(1);
+        }
+    }
+
+    it++;
+    int result = (*it)->evaluate();
+    sym->setValue((sym->getValue() - result));
+
+    // Debug print
+    std::cout << name << "=" << std::to_string(sym->getValue()) << std::endl;
+
+    return sym->getValue();
+}
+
+mul_assignment::mul_assignment(IDENTIFIER *IDENTIFIER, expression *expression)
+    : STNode(MUL_ASSIGNMENT_NODE, {IDENTIFIER, expression})
+{
+}
+
+int mul_assignment::evaluate()
+{
+    auto it = this->STNode::getChildrenList().begin();
+
+    std::string name = ((IDENTIFIER *)(*it))->getLabel();
+    Symbol *sym = SymbolTable::getInstance()->lookup(name);
+
+    if (!sym)
+    {
+        sym = SymbolTable::getInstance()->lookupGlobal(name);
+        if (!sym || sym->getIsFunction())
+        {
+            std::cerr << "Variable: \"" << name << "\" is not declared"
+                      << std::endl;
+            exit(1);
+        }
+    }
+
+    it++;
+    int result = (*it)->evaluate();
+    sym->setValue((sym->getValue() * result));
+
+    // Debug print
+    std::cout << name << "=" << std::to_string(sym->getValue()) << std::endl;
+
+    return sym->getValue();
+}
+
+div_assignment::div_assignment(IDENTIFIER *IDENTIFIER, expression *expression)
+    : STNode(DIV_ASSIGNMENT_NODE, {IDENTIFIER, expression})
+{
+}
+
+int div_assignment::evaluate()
+{
+    auto it = this->STNode::getChildrenList().begin();
+
+    std::string name = ((IDENTIFIER *)(*it))->getLabel();
+    Symbol *sym = SymbolTable::getInstance()->lookup(name);
+
+    if (!sym)
+    {
+        sym = SymbolTable::getInstance()->lookupGlobal(name);
+        if (!sym || sym->getIsFunction())
+        {
+            std::cerr << "Variable: \"" << name << "\" is not declared"
+                      << std::endl;
+            exit(1);
+        }
+    }
+
+    it++;
+    int result = (*it)->evaluate();
+    if (!result)
+    {
+        std::cerr << "Trying to do a division by 0" << std::endl;
+        exit(1);
+    }
+
+    sym->setValue((sym->getValue() / result));
+
+    // Debug print
+    std::cout << name << "=" << std::to_string(sym->getValue()) << std::endl;
+
+    return sym->getValue();
+}
+
+mod_assignment::mod_assignment(IDENTIFIER *IDENTIFIER, expression *expression)
+    : STNode(MOD_ASSIGNMENT_NODE, {IDENTIFIER, expression})
+{
+}
+
+int mod_assignment::evaluate()
+{
+    auto it = this->STNode::getChildrenList().begin();
+
+    std::string name = ((IDENTIFIER *)(*it))->getLabel();
+    Symbol *sym = SymbolTable::getInstance()->lookup(name);
+
+    if (!sym)
+    {
+        sym = SymbolTable::getInstance()->lookupGlobal(name);
+        if (!sym || sym->getIsFunction())
+        {
+            std::cerr << "Variable: \"" << name << "\" is not declared"
+                      << std::endl;
+            exit(1);
+        }
+    }
+
+    it++;
+    int result = (*it)->evaluate();
+    sym->setValue((sym->getValue() % result));
+
+    // Debug print
+    std::cout << name << "=" << std::to_string(sym->getValue()) << std::endl;
+
+    return sym->getValue();
+}
+
+mod::mod(expression *left, expression *right) : STNode(MOD_NODE, {left, right})
+{
+}
+
+int mod::evaluate()
+{
+    auto it = this->getChildrenList().begin();
+    STNode *leftNode = *it;
+    it++;
+    STNode *rightNode = *it;
+
+    return leftNode->evaluate() % rightNode->evaluate();
 }
 
 variable_declaration_list::variable_declaration_list(
@@ -695,5 +974,21 @@ int program::evaluate()
 {
     auto it = this->getChildrenList().begin();
 
-    return (*it)->evaluate();
+    (*it)->evaluate();
+
+    Symbol *entry = SymbolTable::getInstance()->lookupGlobal("main");
+    if (entry == nullptr || entry->getFunctionBody())
+    {
+        std::cerr << "Error: Linker error - undefined reference to 'main'"
+                  << std::endl;
+        exit(1);
+    }
+
+    SymbolTable::getInstance()->enterScope(); // Main Scope
+    // When i will make scopes for every compound statement this will leave
+    // Because function_body is always a compound statement
+    int result = entry->getFunctionBody()->evaluate();
+    SymbolTable::getInstance()->exitScope();
+
+    return result;
 }

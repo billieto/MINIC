@@ -28,13 +28,15 @@
 %start program
 
 %token <node> NUMBER IDENTIFIER
-%token SEMICOLON OPEN_PAREN CLOSE_PAREN
+%token SEMICOLON OPEN_PAREN CLOSE_PAREN SHIFT_LEFT SHIFT_RIGHT
 %token OPEN_BRACKET CLOSE_BRACKET IF ELSE LOWER_THAN_ELSE
 %token PLUS EQUALS MINUS MUL DIV INCREMENT DECREMENT
 %token LESS LESS_EQUALS GREATER GREATER_EQUALS 
 %token LOGIC_EQUALS LOGIC_AND LOGIC_OR LOGIC_NOT
-%token COMMA RETURN VAR_PRIORITY
+%token COMMA RETURN VAR_PRIORITY MOD MOD_EQUALS
 %token INT_TYPE FLOAT_TYPE VOID_TYPE DOUBLE_TYPE CHAR_TYPE
+%token PLUS_EQUALS MINUS_EQUALS MUL_EQUALS DIV_EQUALS
+%token BIT_WISE_OR BIT_WISE_AND BIT_WISE_XOR BIT_WISE_NOT
 
 %type <node> expression condition program 
 %type <node> if_statement compound_statement statement_list statement
@@ -46,18 +48,24 @@
 %nonassoc ELSE
 %nonassoc VAR_PRIORITY
 
-%right EQUALS
+%right EQUALS PLUS_EQUALS MINUS_EQUALS MUL_EQUALS DIV_EQUALS MOD_EQUALS
 
 %left LOGIC_OR
 %left LOGIC_AND
 
+%left BIT_WISE_OR
+%left BIT_WISE_XOR
+%left BIT_WISE_AND
+
 %left LOGIC_EQUALS LOGIC_NOT_EQUALS
 %left LESS LESS_EQUALS GREATER GREATER_EQUALS
 
-%left PLUS MINUS
-%left MUL DIV
+%left SHIFT_LEFT SHIFT_RIGHT
 
-%right LOGIC_NOT
+%left PLUS MINUS
+%left MUL DIV MOD
+
+%right LOGIC_NOT BIT_WISE_NOT
 
 %left INCREMENT DECREMENT
 
@@ -80,13 +88,8 @@ translation_unit:
 external_declaration:
 	function_declaration { $$ = new external_declaration((function_declaration *) $1); }
 |	function_definition { $$ = new external_declaration((function_definition *) $1); }
-|	variable_declaration_statement
-	{	// Global declaration of variables
-		$$ = new external_declaration((variable_declaration_statement *) $1);
-
-		((external_declaration *) $$) -> evaluate();
-	}
-;
+|	variable_declaration_statement{ $$ = new external_declaration((variable_declaration_statement *) $1); }
+;	// ^ Global declaration of variables
 
 // Variable declaration recursion
 variable_declaration_statement:
@@ -229,6 +232,7 @@ expression:
 |	expression DIV expression { $$ = new division((expression *) $1, (expression *) $3); }
 |	expression PLUS expression { $$ = new addition((expression *) $1, (expression *) $3); }
 |	expression MINUS expression { $$ = new subtraction((expression *) $1, (expression *) $3); }
+|	expression MOD expression { $$ = new mod((expression *) $1, (expression *) $3); }
 |	expression LESS expression { $$ = new less((expression *) $1, (expression *) $3);}
 |	expression LESS_EQUALS expression {	$$ = new less_equals((expression *) $1, (expression *) $3); }
 |	expression GREATER expression { $$ = new greater((expression *) $1, (expression *) $3); }
@@ -237,10 +241,21 @@ expression:
 |	expression LOGIC_NOT_EQUALS expression { $$ = new logic_not_equals((expression *) $1, (expression *) $3); }
 |	expression LOGIC_AND expression { $$ = new logic_and((expression *) $1, (expression *) $3); }
 |	expression LOGIC_OR expression { $$ = new logic_or((expression *) $1, (expression *) $3); }
+|	expression BIT_WISE_OR expression { $$ = new bit_wise_or((expression *) $1, (expression *) $3); }
+|	expression BIT_WISE_AND expression { $$ = new bit_wise_and((expression *) $1, (expression *) $3); }
+|	expression BIT_WISE_XOR expression { $$ = new bit_wise_xor((expression *) $1, (expression *) $3); }
+|	BIT_WISE_NOT expression { $$ = new bit_wise_not((expression *) $2); }
+|	expression SHIFT_LEFT expression { $$ = new shift_left((expression *) $1, (expression *) $3); }
+|	expression SHIFT_RIGHT expression { $$ = new shift_left((expression *) $1, (expression *) $3); }
 |	LOGIC_NOT expression { $$ = new logic_not((expression *) $2); }
 |	expression INCREMENT { $$ = new increment((expression *) $1); }
 |	expression DECREMENT { $$ = new decrement((expression *) $1); }
 |	IDENTIFIER EQUALS expression { $$ = new assignment((IDENTIFIER *) $1, (expression *) $3); }
+|	IDENTIFIER PLUS_EQUALS expression { $$ = new plus_assignment((IDENTIFIER *) $1, (expression *) $3); }
+|	IDENTIFIER MINUS_EQUALS expression { $$ = new minus_assignment((IDENTIFIER *) $1, (expression *) $3); }
+|	IDENTIFIER MUL_EQUALS expression { $$ = new mul_assignment((IDENTIFIER *) $1, (expression *) $3); }
+|	IDENTIFIER DIV_EQUALS expression { $$ = new div_assignment((IDENTIFIER *) $1, (expression *) $3); }
+|	IDENTIFIER MOD_EQUALS expression { $$ = new mod_assignment((IDENTIFIER *) $1, (expression *) $3); }
 ;
 
 type_specifier:

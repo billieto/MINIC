@@ -15,7 +15,6 @@ typedef yy::parser::token token;
 
 %x SINGLE_LINE_COMMENT
 %x MULTI_LINE_COMMENT
-%x PRE_PROCESSOR
 
 ID [a-zA-Z_][a-zA-Z0-9_]*
 
@@ -23,12 +22,21 @@ ID [a-zA-Z_][a-zA-Z0-9_]*
 
 "++" { return token::INCREMENT; }
 "--" { return token::DECREMENT; }
+
+"=" { return token::EQUALS; }
 "+" { return token::PLUS; }
 ";" { return token::SEMICOLON; }
-"=" { return token::EQUALS; }
 "-" { return token::MINUS; }
 "*" { return token::MUL; }
 "/" { return token::DIV; }
+"%" { return token::MOD; }
+
+"+=" { return token::PLUS_EQUALS; }
+"-=" { return token::MINUS_EQUALS; }
+"*=" { return token::MUL_EQUALS; }
+"/=" { return token::DIV_EQUALS; }
+"%=" { return token::MOD_EQUALS; }
+
 "(" { return token::OPEN_PAREN; }
 ")" { return token::CLOSE_PAREN; }
 "{" { return token::OPEN_BRACKET; }
@@ -46,6 +54,13 @@ ID [a-zA-Z_][a-zA-Z0-9_]*
 "&&"    { return token::LOGIC_AND; }
 "||"    { return token::LOGIC_OR; }
 "!" { return token::LOGIC_NOT; }
+
+"|" { return token::BIT_WISE_OR; }
+"&" { return token::BIT_WISE_AND; }
+"^" { return token::BIT_WISE_XOR; }
+"~" { return token::BIT_WISE_NOT; }
+"<<" { return token::SHIFT_LEFT; }
+">>" { return token::SHIFT_RIGHT; }
 
 "int" { return token::INT_TYPE; }
 "double" { return token::DOUBLE_TYPE; }

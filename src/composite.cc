@@ -43,7 +43,19 @@ std::string g_nodeTypeLabels[] = {"PROGRAM",
                                   "TRANSLATION_UNIT",
                                   "RETURN_NODE",
                                   "VARIABLE_DECLARATION_LIST",
-                                  "VARIABLE_DECLARATION_STATEMENT"};
+                                  "VARIABLE_DECLARATION_STATEMENT",
+                                  "BIT_WISE_OR",
+                                  "BIT_WISE_AND",
+                                  "BIT_WISE_XOR",
+                                  "BIT_WISE_NOT",
+                                  "SHIFT_LEFT",
+                                  "SHIFT_RIGHT",
+                                  "PLUS_ASSIGNMENT",
+                                  "MINUS_ASSIGNMENT",
+                                  "MUL_ASSIGNMENT",
+                                  "DIV_ASSIGNMENT",
+                                  "MOD_ASSIGNMENT",
+                                  "MOD"};
 
 STNode::STNode(nodeType nodeType, std::initializer_list<STNode *> children)
 {

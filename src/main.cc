@@ -3,8 +3,7 @@
 #include <iostream>
 
 #include "../lib/parser.tab.hh"
-//#include "../lib/lexer.hh"
-
+// #include "../lib/lexer.hh"
 
 extern STNode *g_root;
 extern FILE *yyin;
@@ -27,35 +26,23 @@ int main(int argc, char *argv[])
     // Syntax Tree
     dot = new std::ofstream("ST.dot", std::ofstream::out);
     (*dot) << "digraph ST\n{\n";
-    g_root -> printSyntaxTree(dot);
+    g_root->printSyntaxTree(dot);
     (*dot) << "}";
-    dot -> close();
-    
-    Symbol *entry = SymbolTable::getInstance() -> lookupGlobal("main");
-    
-    if (entry == nullptr)
-    {   // Wanna be linker error XD
-        std::cout << "Error: Linker error - undefined reference to 'main'" << std::endl;
-    }
-    else
-    {
-        try
-        {
-            SymbolTable::getInstance() -> enterScope(); // Main scope
-            entry -> getFunctionBody() -> evaluate();
-        }
-        catch (int mainReturn)
-        {
-            if (!mainReturn)
-            {
-                std::cout << "Super!" << std::endl;
-            }
-            else
-            {
-                std::cout << "Not Super" << std::endl;
-            }
+    dot->close();
 
-            SymbolTable::getInstance() -> exitScope();
+    try
+    {
+        g_root->evaluate();
+    }
+    catch (int mainReturn)
+    {
+        if (!mainReturn)
+        {
+            std::cout << "Super!" << std::endl;
+        }
+        else
+        {
+            std::cout << "Not Super" << std::endl;
         }
     }
 
