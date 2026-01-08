@@ -55,7 +55,12 @@ std::string g_nodeTypeLabels[] = {"PROGRAM",
                                   "MUL_ASSIGNMENT",
                                   "DIV_ASSIGNMENT",
                                   "MOD_ASSIGNMENT",
-                                  "MOD"};
+                                  "MOD",
+                                  "WHILE_STATEMENT",
+                                  "CONTINUE_STATEMENT",
+                                  "BREAK_STATEMENT",
+                                  "DO_WHILE_STATEMENT",
+                                  "FOR_STATEMENT"};
 
 STNode::STNode(nodeType nodeType, std::initializer_list<STNode *> children)
 {

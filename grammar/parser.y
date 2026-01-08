@@ -37,12 +37,14 @@
 %token INT_TYPE FLOAT_TYPE VOID_TYPE DOUBLE_TYPE CHAR_TYPE
 %token PLUS_EQUALS MINUS_EQUALS MUL_EQUALS DIV_EQUALS
 %token BIT_WISE_OR BIT_WISE_AND BIT_WISE_XOR BIT_WISE_NOT
+%token CONTINUE BREAK WHILE DO FOR
 
 %type <node> expression condition program 
 %type <node> if_statement compound_statement statement_list statement
 %type <node> type_specifier argument_list parameter_list parameter_list_optional
 %type <node> function_definition function_declaration variable_declaration_statement
 %type <node> translation_unit external_declaration variable_declaration_list variable_declaration
+%type <node> while_statement do_while_statement for_statement
 
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
@@ -206,11 +208,14 @@ statement:
 |	compound_statement { $$ = $1; }
 |	if_statement { $$ = $1; }
 |	variable_declaration_statement { $$ = $1; }
+|	while_statement { $$ = $1; }
+| 	do_while_statement SEMICOLON { $$ = $1; }
+| 	for_statement { $$ = $1; }
 |	RETURN expression SEMICOLON { $$ = new return_node((expression *) $2); }
+|	RETURN SEMICOLON { $$ = new return_node(); }
+|	CONTINUE SEMICOLON { $$ = new continue_node(); }
+|	BREAK SEMICOLON { $$ = new break_node(); }
 // | switch_statement
-// | while_statement
-// | do_while_statement SEMICOLON
-// | for_statement
 ;
 
 condition:
@@ -218,8 +223,21 @@ condition:
 ;
 
 if_statement:
-	IF condition statement %prec LOWER_THAN_ELSE { $$ = new if_statement((condition *) $2, (statement_list *) $3); }
-|	IF condition statement ELSE statement { $$ = new if_statement((condition *) $2, (statement_list *) $3, (statement_list *) $5); }
+	IF condition statement %prec LOWER_THAN_ELSE { $$ = new if_statement((condition *) $2, (statement *) $3); }
+|	IF condition statement ELSE statement { $$ = new if_statement((condition *) $2, (statement *) $3, (statement *) $5); }
+;
+
+while_statement:
+	WHILE condition statement { $$ = new while_statement((condition *) $2, (statement *) $3); }
+;
+
+do_while_statement:
+	DO compound_statement WHILE condition { $$ = new do_while_statement((compound_statement *) $2, (condition *) $4); }
+;
+
+for_statement: // Maybe i should have a statement instead of expression for first part of for
+	FOR OPEN_PAREN expression SEMICOLON expression SEMICOLON expression CLOSE_PAREN compound_statement
+	{ $$ = new for_statement((expression *) $3, (expression *) $5, (expression *) $7, (compound_statement *) $9); }
 ;
 
 expression:

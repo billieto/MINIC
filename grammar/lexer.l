@@ -67,9 +67,13 @@ ID [a-zA-Z_][a-zA-Z0-9_]*
 "float" { return token::FLOAT_TYPE; }
 "char" { return token::CHAR_TYPE; }
 "void" { return token::VOID_TYPE; }
+
 "return" { return token::RETURN; }
- /* "break" { return token::BREAK; }
-    "continue" { return token::continue; }*/
+"break" { return token::BREAK; }
+"continue" { return token::CONTINUE; }
+"while" { return token::WHILE; }
+"do" { return token::DO; }
+"for" { return token::FOR; }
 
 [0-9]+  { // TODO: If i want type system i need to make float numbers and in the constructor of the NUMBER class i need to sent its type.
             yylval -> node = new NUMBER(atoi(yytext));

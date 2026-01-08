@@ -1,5 +1,4 @@
 #pragma once
-
 #ifndef CONCRETE_
 #define CONCRETE_
 
@@ -368,9 +367,52 @@ class condition : public STNode
 class if_statement : public STNode
 {
   public:
-    if_statement(condition *condition, statement_list *statement_list);
-    if_statement(condition *condition, statement_list *statement_list1,
-                 statement_list *statement_list2);
+    if_statement(condition *condition, statement *statement);
+    if_statement(condition *condition, statement *statement1,
+                 statement *statement2);
+
+    int evaluate() override;
+};
+
+class while_statement : public STNode
+{
+  public:
+    while_statement(condition *condition, statement *statement);
+
+    int evaluate() override;
+};
+
+class do_while_statement : public STNode
+{
+  public:
+    do_while_statement(compound_statement *compound_statement,
+                       condition *condition);
+
+    int evaluate() override;
+};
+
+class for_statement : public STNode
+{
+  public:
+    for_statement(expression *expression1, expression *expression2,
+                  expression *expression3,
+                  compound_statement *compound_statement);
+
+    int evaluate() override;
+};
+
+class continue_node : public STNode
+{
+  public:
+    continue_node();
+
+    int evaluate() override;
+};
+
+class break_node : public STNode
+{
+  public:
+    break_node();
 
     int evaluate() override;
 };
@@ -445,6 +487,7 @@ class return_node : public STNode
 {
   public:
     return_node(expression *expression);
+    return_node();
 
     int evaluate() override;
 };

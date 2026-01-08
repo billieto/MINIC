@@ -7,6 +7,18 @@
 #include <sys/types.h>
 #include <vector>
 
+struct continue_signal
+{
+};
+
+struct break_signal
+{
+};
+
+struct void_return_signal
+{
+};
+
 NUMBER::NUMBER(int value) : STNode(NUMBER_NODE, {})
 {
     m_value.i = value;
@@ -273,8 +285,29 @@ increment::increment(expression *expression)
 int increment::evaluate()
 {
     auto it = this->getChildrenList().begin();
-    int temp = (*it)->evaluate();
-    return (temp + 1);
+
+    IDENTIFIER *id = (IDENTIFIER *)(*it);
+
+    if (!id)
+    {
+        std::cerr << "cant be none other that lvalue to increment" << std::endl;
+    }
+
+    std::string name = id->getLabel();
+    Symbol *sym = SymbolTable::getInstance()->lookup(name);
+
+    if (!sym)
+    {
+        std::cerr << "Variable: \"" << name << "\" is not declared"
+                  << std::endl;
+        exit(1);
+    }
+
+    int old_value = (*it)->evaluate();
+
+    sym->setValue(old_value + 1);
+
+    return old_value;
 }
 
 decrement::decrement(expression *expression)
@@ -285,8 +318,29 @@ decrement::decrement(expression *expression)
 int decrement::evaluate()
 {
     auto it = this->getChildrenList().begin();
-    int temp = (*it)->evaluate();
-    return (temp - 1);
+
+    IDENTIFIER *id = (IDENTIFIER *)(*it);
+
+    if (!id)
+    {
+        std::cerr << "cant be none other that lvalue to increment" << std::endl;
+    }
+
+    std::string name = id->getLabel();
+    Symbol *sym = SymbolTable::getInstance()->lookup(name);
+
+    if (!sym)
+    {
+        std::cerr << "Variable: \"" << name << "\" is not declared"
+                  << std::endl;
+        exit(1);
+    }
+
+    int old_value = (*it)->evaluate();
+
+    sym->setValue(old_value - 1);
+
+    return old_value;
 }
 
 assignment::assignment(IDENTIFIER *IDENTIFIER, expression *expression)
@@ -753,15 +807,14 @@ int condition::evaluate()
     return (*it)->evaluate();
 }
 
-if_statement::if_statement(condition *condition, statement_list *statement_list)
-    : STNode(IF_STATEMENT_NODE, {condition, statement_list})
+if_statement::if_statement(condition *condition, statement *statement)
+    : STNode(IF_STATEMENT_NODE, {condition, statement})
 {
 }
 
-if_statement::if_statement(condition *condition,
-                           statement_list *statement_list1,
-                           statement_list *statement_list2)
-    : STNode(IF_STATEMENT_NODE, {condition, statement_list1, statement_list2})
+if_statement::if_statement(condition *condition, statement *statement1,
+                           statement *statement2)
+    : STNode(IF_STATEMENT_NODE, {condition, statement1, statement2})
 {
 }
 
@@ -771,20 +824,135 @@ int if_statement::evaluate()
     int cond = (*it)->evaluate();
     int result = 0;
 
+    it++;
+
     if (cond)
     {
-        it++;
         result = (*it)->evaluate();
     }
-    else if (it != this->getChildrenList().end())
+    else if (this->getChildrenList().size() ==
+             3) // Maybe it dose not work that well :(
     {
-        ++ ++it;
+        it++;
         result = (*it)->evaluate();
     }
 
     std::cout << result << std::endl;
     return result;
 }
+
+while_statement::while_statement(condition *condition, statement *statement)
+    : STNode(WHILE_STATEMENT_NODE, {condition, statement})
+{
+}
+
+int while_statement::evaluate()
+{
+    auto it = this->getChildrenList().begin();
+
+    condition *cond = (condition *)(*it);
+    it++;
+
+    while (cond->evaluate())
+    {
+        try
+        {
+            (*it)->evaluate();
+        }
+        catch (continue_signal)
+        {
+            continue;
+        }
+        catch (break_signal)
+        {
+            break;
+        }
+    }
+    // return statement auto-thrown into the function call node.
+    return 0;
+}
+
+do_while_statement::do_while_statement(compound_statement *compound_statement,
+                                       condition *condition)
+    : STNode(DO_WHILE_STATEMENT_NODE, {compound_statement, condition})
+{
+}
+
+int do_while_statement::evaluate()
+{
+    auto it = this->getChildrenList().begin();
+
+    compound_statement *body = (compound_statement *)(*it);
+    it++;
+
+    do
+    {
+        try
+        {
+            body->evaluate();
+        }
+        catch (continue_signal)
+        {
+            continue;
+        }
+        catch (break_signal)
+        {
+            break;
+        }
+    } while ((*it)->evaluate());
+
+    return 0;
+}
+
+for_statement::for_statement(expression *expression1, expression *expression2,
+                             expression *expression3,
+                             compound_statement *compound_statement)
+    : STNode(FOR_STATEMENT_NODE,
+             {expression1, expression2, expression3, compound_statement})
+{
+}
+
+int for_statement::evaluate()
+{
+    auto it = this->getChildrenList().begin();
+
+    (*it)->evaluate(); // first part or for loop
+    it++;
+
+    STNode *cond = (*it); // second part
+    it++;
+
+    STNode *inc = (*it); // third part
+    it++;
+
+    while (cond->evaluate())
+    {
+        try
+        {
+            (*it)->evaluate(); // the body
+        }
+        catch (continue_signal)
+        {
+            continue;
+        }
+        catch (break_signal)
+        {
+            break;
+        }
+
+        inc->evaluate();
+    }
+
+    return 0;
+}
+
+continue_node::continue_node() : STNode(CONTINUE_NODE, {}) {}
+
+int continue_node::evaluate() { throw continue_signal(); }
+
+break_node::break_node() : STNode(BREAK_NODE, {}) {}
+
+int break_node::evaluate() { throw break_signal(); }
 
 type_specifier::type_specifier(dataType dataType)
     : STNode(TYPE_SPECIFIER_NODE, {})
@@ -812,12 +980,16 @@ int function_call::evaluate()
 
     auto it = childs.begin();
     std::string func_name = ((IDENTIFIER *)*it)->getLabel();
-    std::cout << func_name << std::endl;
+
+    // Debugging print
+    // std::cout << func_name << std::endl;
+
     Symbol *def = SymbolTable::getInstance()->lookupGlobal(func_name);
 
     if (!def)
     { // Need to make it so the error is emitted from the parser.
-        perror("The function you try to call isn't defined");
+        std::cerr << "The function you try to call isn't defined" << std::endl;
+        exit(1);
     }
 
     compound_statement *func_body =
@@ -825,7 +997,9 @@ int function_call::evaluate()
 
     if (!func_body)
     { // Need to make it so the error is emitted from the parser.
-        perror("The function you try to call isn't implemented");
+        std::cerr << "The function you try to call isn't implemented"
+                  << std::endl;
+        exit(1);
     }
 
     if (childs.size() == 1) // No arguments
@@ -845,9 +1019,12 @@ int function_call::evaluate()
     // Here it should do the type check as well!
     std::vector<parameter> &func_params = def->getParameters();
     if (func_params.size() != finalValues.size())
-    { // Need to make it so the error is emitted from the parser.
-        perror("The function you try to call dose not have the same arguments "
-               "as parameters that are defined");
+    {
+        std::cerr
+            << "The function you try to call dose not have the same arguments "
+               "as parameters that are defined"
+            << std::endl;
+        exit(1);
     }
 
     SymbolTable::getInstance()->enterScope();
@@ -869,13 +1046,34 @@ int function_call::evaluate()
     catch (int returnValue)
     {
         SymbolTable::getInstance()->exitScope();
+
+        if (def->getType() == T_VOID)
+        {
+            std::cerr << "Void functions should not return a value"
+                      << std::endl;
+            exit(1); // Should i exit or not?
+        }
+
         return returnValue;
+    }
+    catch (void_return_signal)
+    {
+        SymbolTable::getInstance()->exitScope();
+
+        if (def->getType() != T_VOID)
+        {
+            std::cerr << "Non-void functions should return a value"
+                      << std::endl;
+            exit(1); // Should i exit or not?
+        }
     }
 
     SymbolTable::getInstance()->exitScope();
+
     if (def->getType() != T_VOID)
     { // Semantic-error
-        std::cout << "Non-void functions should return a value" << std::endl;
+        std::cerr << "Non-void functions should return a value" << std::endl;
+        exit(1); // Should i exit or not?
     }
 
     return 0;
@@ -958,11 +1156,20 @@ return_node::return_node(expression *expression)
 {
 }
 
+return_node::return_node() : STNode(RETURN_NODE, {}) {}
+
 int return_node::evaluate()
 {
     auto it = this->getChildrenList().begin();
 
-    throw((*it)->evaluate());
+    if (!(*it)) // return for void functions
+    {
+        throw void_return_signal();
+    }
+    else
+    {
+        throw((*it)->evaluate());
+    }
 }
 
 program::program(translation_unit *translation_unit)
