@@ -39,7 +39,7 @@ class Symbol
                      // function, this shows its return value
     int m_value;
 
-    bool m_is_function;
+    bool m_is_function; // Maybe i put funcSymbol
     std::vector<parameter> m_params;
     STNode *m_function_body;
 
@@ -62,19 +62,33 @@ class Symbol
     STNode *getFunctionBody();
 };
 
+class ScopeFrame
+{
+  private:
+    int m_function_id;
+    std::unordered_map<std::string, Symbol> m_table;
+
+  public:
+    ScopeFrame(int id, std::unordered_map<std::string, Symbol> table);
+
+    int getId();
+    std::unordered_map<std::string, Symbol> &getTable();
+};
+
 class SymbolTable
 {
   private:
     SymbolTable();
 
     static SymbolTable *m_instance;
-    std::vector<std::unordered_map<std::string, Symbol>> scopeStack;
+    std::vector<ScopeFrame> scopeStack;
 
   public:
     ~SymbolTable();
 
     static SymbolTable *getInstance();
-    void enterScope();
+    int getCurrentId();
+    void enterScope(int id);
     void exitScope();
     bool insertGlobal(Symbol sym);
     bool insert(Symbol sym);

@@ -1,4 +1,5 @@
 #include "../lib/composite.hh"
+#include "../lib/visitor.hh"
 #include <cstdarg>
 #include <fstream>
 #include <initializer_list>
@@ -108,3 +109,5 @@ int STNode::evaluate()
 
     return 0;
 }
+
+void STNode::accept(Visitor &v) { v.visitChildren(this); }

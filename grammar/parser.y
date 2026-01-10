@@ -90,7 +90,7 @@ translation_unit:
 external_declaration:
 	function_declaration { $$ = new external_declaration((function_declaration *) $1); }
 |	function_definition { $$ = new external_declaration((function_definition *) $1); }
-|	variable_declaration_statement{ $$ = new external_declaration((variable_declaration_statement *) $1); }
+|	variable_declaration_statement { $$ = new external_declaration((variable_declaration_statement *) $1); }
 ;	// ^ Global declaration of variables
 
 // Variable declaration recursion

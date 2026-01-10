@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "../lib/evaluator_visitor.hh"
 #include "../lib/parser.tab.hh"
 // #include "../lib/lexer.hh"
 
@@ -13,6 +14,7 @@ int main(int argc, char *argv[])
     yy::parser parser;
     std::ofstream *dot;
 
+    // Maybe i could support multiple files
     if (argc != 2)
     {
         std::cerr << "Wrong number of arguments" << std::endl;
@@ -29,22 +31,28 @@ int main(int argc, char *argv[])
     g_root->printSyntaxTree(dot);
     (*dot) << "}";
     dot->close();
+    delete dot;
 
-    try
-    {
-        g_root->evaluate();
-    }
-    catch (int mainReturn)
-    {
-        if (!mainReturn)
-        {
-            std::cout << "Super!" << std::endl;
-        }
-        else
-        {
-            std::cout << "Not Super" << std::endl;
-        }
-    }
+    // Polymorphic way
+    // try
+    // {
+    //     g_root->evaluate();
+    // }
+    // catch (int mainReturn)
+    // {
+    //     if (!mainReturn)
+    //     {
+    //         std::cout << "Super!" << std::endl;
+    //     }
+    //     else
+    //     {
+    //         std::cout << "Not Super" << std::endl;
+    //     }
+    // }
+
+    // Visitor way
+    EvaluatorVisitor eval;
+    g_root->accept(eval);
 
     return 0;
 }

@@ -2,6 +2,8 @@
 #ifndef COMPOSITE_
 #define COMPOSITE_
 
+// #include "visitor.hh"
+class Visitor;
 #include <list>
 #include <string>
 // #include <memory>
@@ -64,6 +66,7 @@ typedef enum nodeType
     FOR_STATEMENT_NODE
 } nodeType;
 
+typedef int Value;
 // class Value
 // {
 // private:
@@ -110,6 +113,7 @@ class STNode
 
     virtual std::string getGraphvizLabel();
     virtual int evaluate();
+    virtual void accept(Visitor &v);
 };
 
 #endif

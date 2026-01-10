@@ -12,7 +12,11 @@ SymbolTable::~SymbolTable()
     delete m_instance;
 }
 
-void SymbolTable::enterScope() { scopeStack.push_back({}); }
+void SymbolTable::enterScope(int id)
+{
+    ScopeFrame sf{id, {}};
+    scopeStack.push_back(sf);
+}
 
 void SymbolTable::exitScope()
 {
@@ -22,16 +26,18 @@ void SymbolTable::exitScope()
     }
 }
 
+int SymbolTable::getCurrentId() { return scopeStack.back().getId(); }
+
 bool SymbolTable::insertGlobal(Symbol sym)
 {
     auto &globalMap = scopeStack.front();
 
-    if (globalMap.count(sym.getName()))
+    if (globalMap.getTable().count(sym.getName()))
     {
         return false;
     }
 
-    globalMap[sym.getName()] = sym;
+    globalMap.getTable()[sym.getName()] = sym;
 
     return true;
 }
@@ -40,12 +46,12 @@ bool SymbolTable::insert(Symbol sym)
 {
     auto &currentScope = scopeStack.back();
 
-    if (currentScope.count(sym.getName()))
+    if (currentScope.getTable().count(sym.getName()))
     {
         return false;
     }
 
-    currentScope[sym.getName()] = sym;
+    currentScope.getTable()[sym.getName()] = sym;
 
     return true;
 }
@@ -54,9 +60,9 @@ Symbol *SymbolTable::lookupGlobal(std::string name)
 {
     auto &globalMap = scopeStack.front();
 
-    if (globalMap.count(name))
+    if (globalMap.getTable().count(name))
     {
-        return &globalMap[name];
+        return &globalMap.getTable()[name];
     }
 
     return nullptr;
@@ -64,13 +70,28 @@ Symbol *SymbolTable::lookupGlobal(std::string name)
 
 Symbol *SymbolTable::lookup(std::string name)
 {
+    int current_id = scopeStack.back().getId();
+
     for (int i = scopeStack.size() - 1; i >= 0; i--)
     {
-        if (scopeStack[i].count(name))
+        ScopeFrame &temp_frame = scopeStack[i];
+
+        if (temp_frame.getId() != current_id)
         {
-            return &scopeStack[i][name];
+            break;
+        }
+
+        if (temp_frame.getTable().count(name))
+        {
+            return &temp_frame.getTable().at(name);
         }
     }
+
+    if (scopeStack.begin()->getTable().count(name))
+    {
+        return &scopeStack.begin()->getTable().at(name);
+    }
+
     return nullptr;
 }
 
@@ -79,7 +100,7 @@ SymbolTable *SymbolTable::getInstance()
     if (m_instance == nullptr)
     {
         m_instance = new SymbolTable();
-        SymbolTable::getInstance()->enterScope(); // Initialize Global Scope
+        m_instance->enterScope(0);
     }
     return m_instance;
 }
@@ -125,3 +146,16 @@ std::vector<parameter> &Symbol::getParameters() { return m_params; }
 int Symbol::getValue() { return m_value; }
 
 STNode *Symbol::getFunctionBody() { return m_function_body; }
+
+ScopeFrame::ScopeFrame(int id, std::unordered_map<std::string, Symbol> table)
+{
+    m_function_id = id;
+    m_table = table;
+}
+
+int ScopeFrame::getId() { return m_function_id; }
+
+std::unordered_map<std::string, Symbol> &ScopeFrame::getTable()
+{
+    return m_table;
+}
