@@ -3,9 +3,11 @@
 
 EvaluatorVisitor::EvaluatorVisitor() {}
 
+Value EvaluatorVisitor::getResult() { return m_result; }
+
 void EvaluatorVisitor::visitIDENTIFIER(IDENTIFIER *node)
 {
-    Symbol *sym = SymbolTable::getInstance()->lookup(node->getLabel());
+    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(node->getLabel()));
 
     if (!sym)
     {
@@ -254,7 +256,7 @@ void EvaluatorVisitor::visitIncrement(increment *node)
     }
 
     std::string name = id->getLabel();
-    Symbol *sym = SymbolTable::getInstance()->lookup(name);
+    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym)
     {
@@ -283,7 +285,7 @@ void EvaluatorVisitor::visitDecrement(decrement *node)
     }
 
     std::string name = id->getLabel();
-    Symbol *sym = SymbolTable::getInstance()->lookup(name);
+    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym)
     {
@@ -303,7 +305,7 @@ void EvaluatorVisitor::visitAssignment(assignment *node)
 
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
-    Symbol *sym = SymbolTable::getInstance()->lookup(name);
+    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym) // In my evaluation methods with polymorphism i just the global
               // stack as well if any errors happen
@@ -326,7 +328,7 @@ void EvaluatorVisitor::visitPlusAssignment(plus_assignment *node)
 
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
-    Symbol *sym = SymbolTable::getInstance()->lookup(name);
+    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym) // In my evaluation methods with polymorphism i just the global
               // stack as well if any errors happen
@@ -349,7 +351,7 @@ void EvaluatorVisitor::visitMinusAssignment(minus_assignment *node)
 
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
-    Symbol *sym = SymbolTable::getInstance()->lookup(name);
+    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym) // In my evaluation methods with polymorphism i just the global
               // stack as well if any errors happen
@@ -372,7 +374,7 @@ void EvaluatorVisitor::visitMulAssignment(mul_assignment *node)
 
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
-    Symbol *sym = SymbolTable::getInstance()->lookup(name);
+    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym) // In my evaluation methods with polymorphism i just the global
               // stack as well if any errors happen
@@ -395,7 +397,7 @@ void EvaluatorVisitor::visitDivAssignment(div_assignment *node)
 
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
-    Symbol *sym = SymbolTable::getInstance()->lookup(name);
+    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym) // In my evaluation methods with polymorphism i just the global
               // stack as well if any errors happen
@@ -423,7 +425,7 @@ void EvaluatorVisitor::visitModAssignment(mod_assignment *node)
 
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
-    Symbol *sym = SymbolTable::getInstance()->lookup(name);
+    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym) // In my evaluation methods with polymorphism i just the global
               // stack as well if any errors happen
@@ -471,15 +473,12 @@ void EvaluatorVisitor::visitVariableDeclarationStatement(
     {
         var->accept(*this);
 
-        Symbol sym;
-        sym.setType(currentType);
-        sym.setName(var->getName());
-        sym.setValue(var->getValue());
-        sym.setIsFunction(false);
+        // Need a way so i dont store the values into the AST.
+        VarSymbol *sym = new VarSymbol(m_result, static_cast<IDENTIFIER *>(var->getChildrenList().front())->getLabel(), currentType);
 
         if (!SymbolTable::getInstance()->insert(sym))
         { // Semantic Error
-            std::cerr << "Variable " << sym.getName() << " already exists."
+            std::cerr << "Variable " << sym->getName() << " already exists."
                       << std::endl;
             exit(1);
         }
@@ -490,14 +489,6 @@ void EvaluatorVisitor::visitStatement(statement *node)
 {
     node->getChildrenList().front()->accept(*this);
 }
-
-// void EvaluatorVisitor::visitStatementList(statement_list *node)
-// {
-//     for (const auto &child : node->getChildrenList())
-//     {
-//         child->accept(*this);
-//     }
-// }
 
 void EvaluatorVisitor::visitCompoundStatement(compound_statement *node)
 {
@@ -665,7 +656,7 @@ void EvaluatorVisitor::visitReturn(return_node *node)
 
 void EvaluatorVisitor::visitFunctionCall(function_call *node)
 {
-    std::vector<int> finalValues;
+    std::vector<Value> finalValues;
     auto childs = node->getChildrenList();
 
     auto it = childs.begin();
@@ -674,7 +665,7 @@ void EvaluatorVisitor::visitFunctionCall(function_call *node)
     // Debugging print
     // std::cout << func_name << std::endl;
 
-    Symbol *def = SymbolTable::getInstance()->lookupGlobal(func_name);
+    FuncSymbol *def = dynamic_cast<FuncSymbol *>(SymbolTable::getInstance()->lookupGlobal(func_name));
 
     if (!def)
     { // Need to make it so the error is emitted from the parser.
@@ -723,10 +714,7 @@ void EvaluatorVisitor::visitFunctionCall(function_call *node)
 
     for (size_t i = 0; i < func_params.size(); i++)
     {
-        Symbol param;
-        param.setName(func_params[i].name);
-        param.setType(func_params[i].type);
-        param.setValue(finalValues[i]);
+        VarSymbol *param = new VarSymbol(finalValues[i], func_params[i].name, func_params[i].type);
 
         SymbolTable::getInstance()->insert(param);
     }
@@ -741,7 +729,7 @@ void EvaluatorVisitor::visitFunctionCall(function_call *node)
     {
         SymbolTable::getInstance()->exitScope();
 
-        if (def->getType() == T_VOID) // TODO: Type checker work
+        if (def->getReturnType() == T_VOID) // TODO: Type checker work
         {
             std::cerr << "Void functions should not return a value"
                       << std::endl;
@@ -754,7 +742,7 @@ void EvaluatorVisitor::visitFunctionCall(function_call *node)
     {
         SymbolTable::getInstance()->exitScope();
 
-        if (def->getType() != T_VOID)
+        if (def->getReturnType() != T_VOID)
         {
             std::cerr << "Non-void functions should return a value"
                       << std::endl;
@@ -766,7 +754,7 @@ void EvaluatorVisitor::visitFunctionCall(function_call *node)
         return_happened = true;
     }
 
-    if (def->getType() != T_VOID &&
+    if (def->getReturnType() != T_VOID &&
         return_happened == false) // TODO: type checker
     {
         SymbolTable::getInstance()->exitScope();
@@ -781,7 +769,7 @@ void EvaluatorVisitor::visitProgram(program *node)
     // i do this because i dont want the compiler to cry
     // auto it = node->getChildrenList().begin();
 
-    Symbol *entry = SymbolTable::getInstance()->lookupGlobal("main");
+    FuncSymbol *entry = dynamic_cast<FuncSymbol *>(SymbolTable::getInstance()->lookupGlobal("main"));
     if (entry == nullptr || !(entry->getFunctionBody()))
     {
         std::cerr << "Linker Error: Undefined reference to \"main\""
@@ -791,7 +779,7 @@ void EvaluatorVisitor::visitProgram(program *node)
     // When i will make scopes for every compound statement this will leave
     // Because function_body is always a compound statement
 
-    if (entry->getParameters().empty())
+    if (!entry->getParameters().empty())
     {
         std::cerr << "Cant support main parameters (maybe for now)"
                   << std::endl;

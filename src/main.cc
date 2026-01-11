@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "../lib/evaluator_visitor.hh"
+#include "../lib/declarator_visitor.hh"
 #include "../lib/parser.tab.hh"
 // #include "../lib/lexer.hh"
 
@@ -51,6 +52,9 @@ int main(int argc, char *argv[])
     // }
 
     // Visitor way
+    DeclaratorVisitor decl;
+    g_root->accept(decl);
+
     EvaluatorVisitor eval;
     g_root->accept(eval);
 

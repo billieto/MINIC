@@ -28,30 +28,30 @@ void SymbolTable::exitScope()
 
 int SymbolTable::getCurrentId() { return scopeStack.back().getId(); }
 
-bool SymbolTable::insertGlobal(Symbol sym)
+bool SymbolTable::insertGlobal(Symbol *sym)
 {
     auto &globalMap = scopeStack.front();
 
-    if (globalMap.getTable().count(sym.getName()))
+    if (globalMap.getTable().count(sym->getName()))
     {
         return false;
     }
 
-    globalMap.getTable()[sym.getName()] = sym;
+    globalMap.getTable()[sym->getName()] = sym;
 
     return true;
 }
 
-bool SymbolTable::insert(Symbol sym)
+bool SymbolTable::insert(Symbol *sym)
 {
     auto &currentScope = scopeStack.back();
 
-    if (currentScope.getTable().count(sym.getName()))
+    if (currentScope.getTable().count(sym->getName()))
     {
         return false;
     }
 
-    currentScope.getTable()[sym.getName()] = sym;
+    currentScope.getTable()[sym->getName()] = sym;
 
     return true;
 }
@@ -62,7 +62,7 @@ Symbol *SymbolTable::lookupGlobal(std::string name)
 
     if (globalMap.getTable().count(name))
     {
-        return &globalMap.getTable()[name];
+        return globalMap.getTable()[name];
     }
 
     return nullptr;
@@ -83,13 +83,13 @@ Symbol *SymbolTable::lookup(std::string name)
 
         if (temp_frame.getTable().count(name))
         {
-            return &temp_frame.getTable().at(name);
+            return temp_frame.getTable().at(name);
         }
     }
 
     if (scopeStack.begin()->getTable().count(name))
     {
-        return &scopeStack.begin()->getTable().at(name);
+        return scopeStack.begin()->getTable().at(name);
     }
 
     return nullptr;
@@ -105,57 +105,64 @@ SymbolTable *SymbolTable::getInstance()
     return m_instance;
 }
 
-Symbol::Symbol()
+Symbol::Symbol(std::string name, SymbolType type)
 {
-    m_is_function = false;
-    m_function_body = nullptr;
-    m_params.clear();
+    m_name = name;
+    m_type = type;
 }
 
-Symbol::~Symbol() {}
-
-void Symbol::setParameters(std::vector<parameter> params)
-{
-    for (const auto &param : params)
-    {
-        m_params.push_back(param);
-    }
-}
-
-void Symbol::setIsFunction(bool is_function) { m_is_function = is_function; }
-
-void Symbol::setName(std::string name) { m_name = name; }
-
-void Symbol::setType(dataType type) { m_type = type; }
-
-void Symbol::setValue(int value) { m_value = value; }
-
-void Symbol::setFunctionBody(STNode *function_body)
-{
-    m_function_body = function_body;
-}
+SymbolType Symbol::getType() { return m_type; }
 
 std::string Symbol::getName() { return m_name; }
 
-bool Symbol::getIsFunction() { return m_is_function; }
+void Symbol::setType(SymbolType type) { m_type = type; }
 
-dataType Symbol::getType() { return m_type; }
+void Symbol::setName(std::string name) { m_name = name; }
 
-std::vector<parameter> &Symbol::getParameters() { return m_params; }
+FuncSymbol::FuncSymbol(dataType return_type, STNode *body,
+                       std::vector<parameter> params, std::string name)
+    : Symbol(name, FUNC_SYM)
+{
+    m_return_type = return_type;
+    m_function_body = body;
+    m_params = params;
+}
 
-int Symbol::getValue() { return m_value; }
+dataType FuncSymbol::getReturnType() { return m_return_type; }
+STNode *FuncSymbol::getFunctionBody() { return m_function_body; }
+std::vector<parameter> &FuncSymbol::getParameters() { return m_params; }
 
-STNode *Symbol::getFunctionBody() { return m_function_body; }
+void FuncSymbol::setReturnType(dataType return_type)
+{
+    m_return_type = return_type;
+}
 
-ScopeFrame::ScopeFrame(int id, std::unordered_map<std::string, Symbol> table)
+void FuncSymbol::setFunctionBody(STNode *body) { m_function_body = body; }
+
+void FuncSymbol::setParameters(std::vector<parameter> params)
+{
+    m_params = params;
+}
+
+ScopeFrame::ScopeFrame(int id, std::unordered_map<std::string, Symbol *> table)
 {
     m_function_id = id;
     m_table = table;
 }
 
+VarSymbol::VarSymbol(Value value, std::string name, dataType type) : Symbol(name, VAR_SYM)
+{
+    m_value = value;
+    m_value_type = type;
+}
+
+Value VarSymbol::getValue() { return m_value; }
+
+void VarSymbol::setValue(Value value) { m_value = value; }
+
 int ScopeFrame::getId() { return m_function_id; }
 
-std::unordered_map<std::string, Symbol> &ScopeFrame::getTable()
+std::unordered_map<std::string, Symbol *> &ScopeFrame::getTable()
 {
     return m_table;
 }

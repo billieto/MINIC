@@ -110,4 +110,9 @@ int STNode::evaluate()
     return 0;
 }
 
+STNode *STNode::getParent()
+{
+    return m_parent;
+}
+
 void STNode::accept(Visitor &v) { v.visitChildren(this); }

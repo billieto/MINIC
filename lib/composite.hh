@@ -107,6 +107,7 @@ class STNode
     }
 
     nodeType getNodeType();
+    STNode *getParent();
     void setParent(STNode *parent);
     void printSyntaxTree(std::ofstream *dot);
     std::list<STNode *> &getChildrenList();

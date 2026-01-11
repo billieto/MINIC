@@ -41,7 +41,7 @@
 
 %type <node> expression condition program 
 %type <node> if_statement compound_statement statement_list statement
-%type <node> type_specifier argument_list parameter_list parameter_list_optional
+%type <node> type_specifier argument_list parameter_list
 %type <node> function_definition function_declaration variable_declaration_statement
 %type <node> translation_unit external_declaration variable_declaration_list variable_declaration
 %type <node> while_statement do_while_statement for_statement
@@ -115,70 +115,30 @@ variable_declaration:
 
 // Functions
 function_definition:
-	type_specifier IDENTIFIER OPEN_PAREN parameter_list_optional CLOSE_PAREN compound_statement
+	type_specifier IDENTIFIER OPEN_PAREN parameter_list CLOSE_PAREN compound_statement
 	{
-		Symbol *existing = SymbolTable::getInstance() -> lookupGlobal(((IDENTIFIER *) $2) -> getLabel());
-
-		if (existing)
-		{
-			if (existing -> getType() != ((type_specifier *) $1) -> getType() || existing -> getParameters() != ((parameter_list *) $4) -> getParameters())
-			{
-				error("Conflicting types for function");
-			}
-
-			existing -> setFunctionBody((compound_statement *) $6);
-		}
-		else
-		{
-			Symbol sym;
-			sym.setName(((IDENTIFIER *) $2) -> getLabel());
-			sym.setType(((type_specifier *) $1) -> getType());
-			sym.setIsFunction(true);
-			sym.setParameters(((parameter_list *) $4) -> getParameters());
-			sym.setFunctionBody((compound_statement *) $6);
-			SymbolTable::getInstance() -> insertGlobal(sym);
-
-		}
-
 		$$ = new function_definition((type_specifier *) $1, (IDENTIFIER *) $2, (parameter_list *) $4, (compound_statement *) $6);
 	}
 	// type_specifier IDENTIFIER OPEN_PAREN argument_list CLOSE_PAREN compound_statement
 ;
 
 function_declaration:
-	type_specifier IDENTIFIER OPEN_PAREN parameter_list_optional CLOSE_PAREN SEMICOLON
+	type_specifier IDENTIFIER OPEN_PAREN parameter_list CLOSE_PAREN SEMICOLON
 	{
-		Symbol sym;
-		sym.setName(((IDENTIFIER *) $2) -> getLabel());
-		sym.setType(((type_specifier *) $1) -> getType());
-		sym.setIsFunction(true);
-		sym.setParameters(((parameter_list *) $4) -> getParameters());
-		sym.setFunctionBody(nullptr);
-
-		if (!SymbolTable::getInstance() -> insert(sym))
-		{
-			error("Function already defined");
-		}
-
 		$$ = new function_declaration((type_specifier *) $1, (IDENTIFIER *) $2, (parameter_list *) $4);
-	}	// I am not sure if i have to give the parameter list, because i have the current param list.
-;
-
-// Parameters for functions
-parameter_list_optional:
-	/* Empty rule (epsilon) */ { $$ = new parameter_list(); } 
-|	parameter_list { $$ = $1; }
+	}
 ;
 
 parameter_list:
-	/* VOID_TYPE { $$ = new parameter_list(); } */
-	parameter_list COMMA type_specifier IDENTIFIER
+	VOID_TYPE { $$ = new parameter_list(); }
+|	parameter_list COMMA type_specifier IDENTIFIER
 	{
 		$$ = (parameter_list *) $1;
 
 		((parameter_list *) $$) -> add(((type_specifier *) $3) -> getType(), ((IDENTIFIER *) $4) -> getLabel());
 	}
 |	type_specifier IDENTIFIER { $$ = new parameter_list((type_specifier *) $1, (IDENTIFIER *) $2); }
+|	/* Empty */ { $$ = new parameter_list(); }
 ;
 
 // Arguments for function calls

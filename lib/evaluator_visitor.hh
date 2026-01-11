@@ -28,7 +28,7 @@ class EvaluatorVisitor : public Visitor
     ~EvaluatorVisitor() = default;
 
     // Helper to get the calculation result
-    int getResult() const;
+    Value getResult();
 
     // Leaf Nodes
     void visitIDENTIFIER(IDENTIFIER *node) override;

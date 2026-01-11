@@ -31,48 +31,75 @@ typedef struct param
     bool operator!=(const param &other) const { return !(*this == other); }
 } parameter;
 
+enum SymbolType
+{
+    VAR_SYM,
+    FUNC_SYM
+};
+
 class Symbol
 {
   private:
     std::string m_name;
-    dataType m_type; // if its a variable, this shows its type. If its a
-                     // function, this shows its return value
-    int m_value;
-
-    bool m_is_function; // Maybe i put funcSymbol
-    std::vector<parameter> m_params;
-    STNode *m_function_body;
+    SymbolType m_type;
 
   public:
-    Symbol();
-    ~Symbol();
+    Symbol(std::string name, SymbolType type);
+    virtual ~Symbol() = default; // FIXME: Need to check if i have memory leak
 
-    void setIsFunction(bool is_function);
-    void setParameters(std::vector<parameter> params);
-    void setName(std::string name);
-    void setType(dataType type);
-    void setValue(int value);
-    void setFunctionBody(STNode *function_body);
-
-    bool getIsFunction();
+    SymbolType getType();
     std::string getName();
-    dataType getType();
-    std::vector<parameter> &getParameters();
-    int getValue();
+
+    void setName(std::string name);
+    void setType(SymbolType type);
+};
+
+class FuncSymbol : public Symbol
+{
+  private:
+    std::vector<parameter> m_params;
+    STNode *m_function_body;
+    dataType m_return_type;
+
+  public:
+    FuncSymbol(dataType return_type, STNode *body,
+               std::vector<parameter> params, std::string name);
+    // Maybe i should make &params because i want a copy of existing data in the
+    // memory
+    dataType getReturnType();
     STNode *getFunctionBody();
+    std::vector<parameter> &getParameters();
+
+    void setReturnType(dataType return_type);
+    void setFunctionBody(STNode *body);
+    void setParameters(std::vector<parameter> params);
+};
+
+class VarSymbol : public Symbol
+{
+  private:
+    Value m_value;
+    dataType m_value_type;
+
+  public:
+    VarSymbol(Value value, std::string name, dataType type);
+
+    Value getValue();
+
+    void setValue(Value value);
 };
 
 class ScopeFrame
 {
   private:
     int m_function_id;
-    std::unordered_map<std::string, Symbol> m_table;
+    std::unordered_map<std::string, Symbol *> m_table;
 
   public:
-    ScopeFrame(int id, std::unordered_map<std::string, Symbol> table);
+    ScopeFrame(int id, std::unordered_map<std::string, Symbol *> table);
 
     int getId();
-    std::unordered_map<std::string, Symbol> &getTable();
+    std::unordered_map<std::string, Symbol *> &getTable();
 };
 
 class SymbolTable
@@ -90,8 +117,8 @@ class SymbolTable
     int getCurrentId();
     void enterScope(int id);
     void exitScope();
-    bool insertGlobal(Symbol sym);
-    bool insert(Symbol sym);
+    bool insertGlobal(Symbol *sym);
+    bool insert(Symbol *sym);
     Symbol *lookupGlobal(std::string name);
     Symbol *lookup(std::string name);
 };

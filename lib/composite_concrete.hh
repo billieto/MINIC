@@ -22,7 +22,7 @@ class NUMBER : public STNode
 
     std::string getGraphvizLabel() override;
     Value getValue();
-    int evaluate() override;
+    // int evaluate() override;
 
     void accept(Visitor &v) override;
 };
@@ -38,7 +38,7 @@ class IDENTIFIER : public STNode
     std::string getLabel();
 
     std::string getGraphvizLabel() override;
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -67,7 +67,7 @@ class multiplication : public STNode
   public:
     multiplication(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -76,7 +76,7 @@ class division : public STNode
   public:
     division(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -85,7 +85,7 @@ class addition : public STNode
   public:
     addition(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -94,7 +94,7 @@ class subtraction : public STNode
   public:
     subtraction(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -103,7 +103,7 @@ class less : public STNode
   public:
     less(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -112,7 +112,7 @@ class less_equals : public STNode
   public:
     less_equals(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -121,7 +121,7 @@ class greater : public STNode
   public:
     greater(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -130,7 +130,7 @@ class greater_equals : public STNode
   public:
     greater_equals(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -139,7 +139,7 @@ class logic_equals : public STNode
   public:
     logic_equals(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -148,7 +148,7 @@ class logic_not_equals : public STNode
   public:
     logic_not_equals(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -157,7 +157,7 @@ class logic_and : public STNode
   public:
     logic_and(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -166,7 +166,7 @@ class logic_or : public STNode
   public:
     logic_or(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -175,7 +175,7 @@ class logic_not : public STNode
   public:
     logic_not(expression *expression);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -184,7 +184,7 @@ class increment : public STNode
   public:
     increment(expression *expression);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -193,7 +193,7 @@ class decrement : public STNode
   public:
     decrement(expression *expression);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -202,7 +202,7 @@ class assignment : public STNode
   public:
     assignment(IDENTIFIER *IDENTIFIER, expression *expression);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -211,7 +211,7 @@ class bit_wise_or : public STNode
   public:
     bit_wise_or(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -220,7 +220,7 @@ class bit_wise_and : public STNode
   public:
     bit_wise_and(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -229,7 +229,7 @@ class bit_wise_xor : public STNode
   public:
     bit_wise_xor(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -238,7 +238,7 @@ class bit_wise_not : public STNode
   public:
     bit_wise_not(expression *expression);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -247,7 +247,7 @@ class shift_left : public STNode
   public:
     shift_left(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -256,7 +256,7 @@ class shift_right : public STNode
   public:
     shift_right(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -265,7 +265,7 @@ class plus_assignment : public STNode
   public:
     plus_assignment(IDENTIFIER *IDENTIFIER, expression *expression);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -274,7 +274,7 @@ class minus_assignment : public STNode
   public:
     minus_assignment(IDENTIFIER *IDENTIFIER, expression *expression);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -283,7 +283,7 @@ class mul_assignment : public STNode
   public:
     mul_assignment(IDENTIFIER *IDENTIFIER, expression *expression);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -292,7 +292,7 @@ class div_assignment : public STNode
   public:
     div_assignment(IDENTIFIER *IDENTIFIER, expression *expression);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -301,7 +301,7 @@ class mod_assignment : public STNode
   public:
     mod_assignment(IDENTIFIER *IDENTIFIER, expression *expression);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -310,7 +310,7 @@ class mod : public STNode
   public:
     mod(expression *left, expression *right);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -324,7 +324,7 @@ class variable_declaration : public STNode
     variable_declaration(IDENTIFIER *IDENTIFIER);
     variable_declaration(IDENTIFIER *IDENTIFIER, expression *expression);
 
-    int evaluate() override;
+    // int evaluate() override;
     std::string getName();
     int getValue();
     void setName(std::string name);
@@ -352,7 +352,7 @@ class variable_declaration_statement : public STNode
         type_specifier *type_specifier,
         variable_declaration_list *variable_declaration_list);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -362,7 +362,7 @@ class compound_statement : public STNode
     compound_statement(statement_list *statement_list);
     compound_statement();
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -372,7 +372,7 @@ class statement_list : public STNode
     statement_list(statement_list *statement_list, statement *statement);
     statement_list(statement *statement);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -383,7 +383,7 @@ class statement : public STNode
     statement(expression *expression);
     statement(compound_statement *compound_statement);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -392,7 +392,7 @@ class condition : public STNode
   public:
     condition(expression *expression);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -403,7 +403,7 @@ class if_statement : public STNode
     if_statement(condition *condition, statement *statement1,
                  statement *statement2);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -412,7 +412,7 @@ class while_statement : public STNode
   public:
     while_statement(condition *condition, statement *statement);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -422,7 +422,7 @@ class do_while_statement : public STNode
     do_while_statement(compound_statement *compound_statement,
                        condition *condition);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -433,7 +433,7 @@ class for_statement : public STNode
                   expression *expression3,
                   compound_statement *compound_statement);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -442,7 +442,7 @@ class continue_node : public STNode
   public:
     continue_node();
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -451,7 +451,7 @@ class break_node : public STNode
   public:
     break_node();
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -478,7 +478,7 @@ class parameter_list : public STNode
     parameter_list();
 
     void add(dataType type, std::string name);
-    std::vector<parameter> getParameters();
+    std::vector<parameter> &getParameters();
     void accept(Visitor &v) override;
 };
 
@@ -488,7 +488,7 @@ class function_call : public STNode
     function_call(IDENTIFIER *IDENTIFIER);
     function_call(IDENTIFIER *IDENTIFIER, argument_list *argument_list);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -538,7 +538,7 @@ class return_node : public STNode
     return_node(expression *expression);
     return_node();
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
@@ -547,7 +547,7 @@ class program : public STNode
   public:
     program(translation_unit *translation_unit);
 
-    int evaluate() override;
+    // int evaluate() override;
     void accept(Visitor &v) override;
 };
 
