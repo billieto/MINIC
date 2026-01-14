@@ -150,7 +150,8 @@ ScopeFrame::ScopeFrame(int id, std::unordered_map<std::string, Symbol *> table)
     m_table = table;
 }
 
-VarSymbol::VarSymbol(Value value, std::string name, dataType type) : Symbol(name, VAR_SYM)
+VarSymbol::VarSymbol(Value value, std::string name, dataType type)
+    : Symbol(name, VAR_SYM)
 {
     m_value = value;
     m_value_type = type;

@@ -7,7 +7,8 @@ Value EvaluatorVisitor::getResult() { return m_result; }
 
 void EvaluatorVisitor::visitIDENTIFIER(IDENTIFIER *node)
 {
-    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(node->getLabel()));
+    VarSymbol *sym = dynamic_cast<VarSymbol *>(
+        SymbolTable::getInstance()->lookup(node->getLabel()));
 
     if (!sym)
     {
@@ -21,6 +22,20 @@ void EvaluatorVisitor::visitIDENTIFIER(IDENTIFIER *node)
 void EvaluatorVisitor::visitNUMBER(NUMBER *node)
 {
     m_result = node->getValue();
+}
+
+void EvaluatorVisitor::visitUnaryPlus(unary_plus *node)
+{
+    node->getChildrenList().front()->accept(*this);
+
+    m_result = +m_result;
+}
+
+void EvaluatorVisitor::visitUnaryMinus(unary_minus *node)
+{
+    node->getChildrenList().front()->accept(*this);
+
+    m_result = -m_result;
 }
 
 void EvaluatorVisitor::visitAddition(addition *node)
@@ -241,7 +256,7 @@ void EvaluatorVisitor::visitShiftRight(shift_right *node)
     m_result = left_result >> right_result;
 }
 
-void EvaluatorVisitor::visitIncrement(increment *node)
+void EvaluatorVisitor::visitPostfixIncrement(postfix_increment *node)
 {
     auto it = node->getChildrenList().begin();
 
@@ -256,7 +271,8 @@ void EvaluatorVisitor::visitIncrement(increment *node)
     }
 
     std::string name = id->getLabel();
-    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
+    VarSymbol *sym =
+        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym)
     {
@@ -270,7 +286,7 @@ void EvaluatorVisitor::visitIncrement(increment *node)
     m_result = old_value;
 }
 
-void EvaluatorVisitor::visitDecrement(decrement *node)
+void EvaluatorVisitor::visitPostfixDecrement(postfix_decrement *node)
 {
     auto it = node->getChildrenList().begin();
 
@@ -285,7 +301,8 @@ void EvaluatorVisitor::visitDecrement(decrement *node)
     }
 
     std::string name = id->getLabel();
-    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
+    VarSymbol *sym =
+        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym)
     {
@@ -299,13 +316,72 @@ void EvaluatorVisitor::visitDecrement(decrement *node)
     m_result = old_value;
 }
 
+void EvaluatorVisitor::visitPrefixIncrement(prefix_increment *node)
+{
+    auto it = node->getChildrenList().begin();
+
+    IDENTIFIER *id = dynamic_cast<IDENTIFIER *>(*it);
+    // TODO: This is the work of the type checker later
+    if (!id)
+    {
+        std::cerr << "Semantic Error: Increment operator (++) requires a "
+                     "variable (l-value)."
+                  << std::endl;
+        exit(1);
+    }
+
+    std::string name = id->getLabel();
+    VarSymbol *sym =
+        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
+
+    if (!sym)
+    {
+        std::cerr << "Runtime Error: Variable \"" << name
+                  << "\" is not declared" << std::endl;
+        exit(1);
+    }
+
+    sym->setValue(sym->getValue() + 1);
+    m_result = sym->getValue();
+}
+
+void EvaluatorVisitor::visitPrefixDecrement(prefix_decrement *node)
+{
+    auto it = node->getChildrenList().begin();
+
+    IDENTIFIER *id = dynamic_cast<IDENTIFIER *>(*it);
+    // TODO: This is the work of the type checker later
+    if (!id)
+    {
+        std::cerr << "Semantic Error: Increment operator (++) requires a "
+                     "variable (l-value)."
+                  << std::endl;
+        exit(1);
+    }
+
+    std::string name = id->getLabel();
+    VarSymbol *sym =
+        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
+
+    if (!sym)
+    {
+        std::cerr << "Runtime Error: Variable \"" << name
+                  << "\" is not declared" << std::endl;
+        exit(1);
+    }
+
+    sym->setValue(sym->getValue() - 1);
+    m_result = sym->getValue();
+}
+
 void EvaluatorVisitor::visitAssignment(assignment *node)
 {
     auto it = node->getChildrenList().begin();
 
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
-    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
+    VarSymbol *sym =
+        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym) // In my evaluation methods with polymorphism i just the global
               // stack as well if any errors happen
@@ -328,7 +404,8 @@ void EvaluatorVisitor::visitPlusAssignment(plus_assignment *node)
 
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
-    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
+    VarSymbol *sym =
+        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym) // In my evaluation methods with polymorphism i just the global
               // stack as well if any errors happen
@@ -351,7 +428,8 @@ void EvaluatorVisitor::visitMinusAssignment(minus_assignment *node)
 
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
-    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
+    VarSymbol *sym =
+        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym) // In my evaluation methods with polymorphism i just the global
               // stack as well if any errors happen
@@ -374,7 +452,8 @@ void EvaluatorVisitor::visitMulAssignment(mul_assignment *node)
 
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
-    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
+    VarSymbol *sym =
+        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym) // In my evaluation methods with polymorphism i just the global
               // stack as well if any errors happen
@@ -397,7 +476,8 @@ void EvaluatorVisitor::visitDivAssignment(div_assignment *node)
 
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
-    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
+    VarSymbol *sym =
+        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym) // In my evaluation methods with polymorphism i just the global
               // stack as well if any errors happen
@@ -425,7 +505,8 @@ void EvaluatorVisitor::visitModAssignment(mod_assignment *node)
 
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
-    VarSymbol *sym = dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
+    VarSymbol *sym =
+        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     if (!sym) // In my evaluation methods with polymorphism i just the global
               // stack as well if any errors happen
@@ -474,7 +555,11 @@ void EvaluatorVisitor::visitVariableDeclarationStatement(
         var->accept(*this);
 
         // Need a way so i dont store the values into the AST.
-        VarSymbol *sym = new VarSymbol(m_result, static_cast<IDENTIFIER *>(var->getChildrenList().front())->getLabel(), currentType);
+        VarSymbol *sym = new VarSymbol(
+            m_result,
+            static_cast<IDENTIFIER *>(var->getChildrenList().front())
+                ->getLabel(),
+            currentType);
 
         if (!SymbolTable::getInstance()->insert(sym))
         { // Semantic Error
@@ -487,7 +572,12 @@ void EvaluatorVisitor::visitVariableDeclarationStatement(
 
 void EvaluatorVisitor::visitStatement(statement *node)
 {
-    node->getChildrenList().front()->accept(*this);
+    auto temp = node->getChildrenList().front();
+
+    if (temp)
+    {
+        temp->accept(*this);
+    }
 }
 
 void EvaluatorVisitor::visitCompoundStatement(compound_statement *node)
@@ -665,7 +755,8 @@ void EvaluatorVisitor::visitFunctionCall(function_call *node)
     // Debugging print
     // std::cout << func_name << std::endl;
 
-    FuncSymbol *def = dynamic_cast<FuncSymbol *>(SymbolTable::getInstance()->lookupGlobal(func_name));
+    FuncSymbol *def = dynamic_cast<FuncSymbol *>(
+        SymbolTable::getInstance()->lookupGlobal(func_name));
 
     if (!def)
     { // Need to make it so the error is emitted from the parser.
@@ -714,7 +805,8 @@ void EvaluatorVisitor::visitFunctionCall(function_call *node)
 
     for (size_t i = 0; i < func_params.size(); i++)
     {
-        VarSymbol *param = new VarSymbol(finalValues[i], func_params[i].name, func_params[i].type);
+        VarSymbol *param = new VarSymbol(finalValues[i], func_params[i].name,
+                                         func_params[i].type);
 
         SymbolTable::getInstance()->insert(param);
     }
@@ -769,7 +861,8 @@ void EvaluatorVisitor::visitProgram(program *node)
     // i do this because i dont want the compiler to cry
     // auto it = node->getChildrenList().begin();
 
-    FuncSymbol *entry = dynamic_cast<FuncSymbol *>(SymbolTable::getInstance()->lookupGlobal("main"));
+    FuncSymbol *entry = dynamic_cast<FuncSymbol *>(
+        SymbolTable::getInstance()->lookupGlobal("main"));
     if (entry == nullptr || !(entry->getFunctionBody()))
     {
         std::cerr << "Linker Error: Undefined reference to \"main\""

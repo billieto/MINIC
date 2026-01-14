@@ -38,8 +38,12 @@ class Visitor
     virtual void visitLogicNot(logic_not *node);
 
     // Unary & Assignment
-    virtual void visitIncrement(increment *node);
-    virtual void visitDecrement(decrement *node);
+    virtual void visitUnaryPlus(unary_plus *node);
+    virtual void visitUnaryMinus(unary_minus *node);
+    virtual void visitPostfixIncrement(postfix_increment *node);
+    virtual void visitPrefixIncrement(prefix_increment *node);
+    virtual void visitPostfixDecrement(postfix_decrement *node);
+    virtual void visitPrefixDecrement(prefix_decrement *node);
     virtual void visitAssignment(assignment *node);
 
     // Bitwise

@@ -1,4 +1,5 @@
 #pragma once
+#include "composite_concrete.hh"
 #ifndef _EVALUATOR
 #define _EVALUATOR
 
@@ -53,8 +54,12 @@ class EvaluatorVisitor : public Visitor
     void visitLogicNot(logic_not *node) override;
 
     // Unary/Bitwise
-    void visitIncrement(increment *node) override;
-    void visitDecrement(decrement *node) override;
+    void visitUnaryPlus(unary_plus *node) override;
+    void visitUnaryMinus(unary_minus *node) override;
+    void visitPostfixIncrement(postfix_increment *node) override;
+    void visitPrefixIncrement(prefix_increment *node) override;
+    void visitPostfixDecrement(postfix_decrement *node) override;
+    void visitPrefixDecrement(prefix_decrement *node) override;
     void visitBitWiseOr(bit_wise_or *node) override;
     void visitBitWiseAnd(bit_wise_and *node) override;
     void visitBitWiseXor(bit_wise_xor *node) override;

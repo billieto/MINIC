@@ -7,29 +7,29 @@
 #include <unordered_map>
 #include <vector>
 
-typedef enum
+enum dataType
 {
     T_INT,
     T_CHAR,
     T_FLOAT,
     T_DOUBLE,
     T_VOID
-} dataType;
+};
 
-typedef struct param
+struct parameter
 {
     dataType type;
     std::string name;
 
     // Gemini told me to add them because a vector cant compare, so i should i
     // make a method that sees if the parameters are the same as arguments.
-    bool operator==(const param &other) const
+    bool operator==(const parameter &other) const
     {
         return (this->type == other.type) && (this->name == other.name);
     }
 
-    bool operator!=(const param &other) const { return !(*this == other); }
-} parameter;
+    bool operator!=(const parameter &other) const { return !(*this == other); }
+};
 
 enum SymbolType
 {

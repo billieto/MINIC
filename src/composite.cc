@@ -16,6 +16,8 @@ std::string g_nodeTypeLabels[] = {"PROGRAM",
                                   "IF_STATEMENT",
                                   "NUMBER",
                                   "EXPRESSION",
+                                  "UNARY_PLUS",
+                                  "UNARY_MINUS",
                                   "IDENTIFIER",
                                   "ASSIGNMENT",
                                   "MULTIPLICATION",
@@ -31,8 +33,10 @@ std::string g_nodeTypeLabels[] = {"PROGRAM",
                                   "LOGIC_OR",
                                   "LOGIC_NOT",
                                   "LOGIC_NOT_EQUALS",
-                                  "INCREMENT",
-                                  "DECREMENT",
+                                  "PREFIX_INCREMENT",
+                                  "PREFIX_DECREMENT",
+                                  "POSTFIX_INCREMENT",
+                                  "POSTFIX_DECREMENT",
                                   "TYPE_SPECIFIER",
                                   "VARIABLE_DECLARATION",
                                   "FUNCTION_CALL",
@@ -110,9 +114,6 @@ int STNode::evaluate()
     return 0;
 }
 
-STNode *STNode::getParent()
-{
-    return m_parent;
-}
+STNode *STNode::getParent() { return m_parent; }
 
 void STNode::accept(Visitor &v) { v.visitChildren(this); }

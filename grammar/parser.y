@@ -37,7 +37,8 @@
 %token INT_TYPE FLOAT_TYPE VOID_TYPE DOUBLE_TYPE CHAR_TYPE
 %token PLUS_EQUALS MINUS_EQUALS MUL_EQUALS DIV_EQUALS
 %token BIT_WISE_OR BIT_WISE_AND BIT_WISE_XOR BIT_WISE_NOT
-%token CONTINUE BREAK WHILE DO FOR
+%token CONTINUE BREAK WHILE DO FOR UNARY_MINUS UNARY_PLUS
+%token POSTFIX_INCREMENT POSTFIX_DECREMENT PREFIX_INCREMENT PREFIX_DECREMENT
 
 %type <node> expression condition program 
 %type <node> if_statement compound_statement statement_list statement
@@ -70,8 +71,9 @@
 %right LOGIC_NOT BIT_WISE_NOT
 
 %left INCREMENT DECREMENT
+%right UNARY_MINUS UNARY_PLUS PREFIX_INCREMENT PREFIX_DECREMENT
 
-%left OPEN_PAREN
+%left OPEN_PAREN POSTFIX_INCREMENT POSTFIX_DECREMENT
 
 %%
 
@@ -175,6 +177,7 @@ statement:
 |	RETURN SEMICOLON { $$ = new return_node(); }
 |	CONTINUE SEMICOLON { $$ = new continue_node(); }
 |	BREAK SEMICOLON { $$ = new break_node(); }
+|	SEMICOLON { $$ = new statement(); }
 // | switch_statement
 ;
 
@@ -195,13 +198,15 @@ do_while_statement:
 	DO compound_statement WHILE condition { $$ = new do_while_statement((compound_statement *) $2, (condition *) $4); }
 ;
 
-for_statement: // Maybe i should have a statement instead of expression for first part of for
+for_statement:
 	FOR OPEN_PAREN expression SEMICOLON expression SEMICOLON expression CLOSE_PAREN compound_statement
 	{ $$ = new for_statement((expression *) $3, (expression *) $5, (expression *) $7, (compound_statement *) $9); }
 ;
 
 expression:
 	NUMBER { $$ = (NUMBER *) $1; }
+|	MINUS expression %prec UNARY_MINUS { $$ = new unary_minus( (expression *) $2); }
+|	PLUS expression %prec UNARY_PLUS { $$ = new unary_plus( (expression *) $2); }
 |	IDENTIFIER %prec VAR_PRIORITY { $$ = (IDENTIFIER *) $1; }
 |	OPEN_PAREN expression CLOSE_PAREN { $$ = (expression *) $2; }
 |	IDENTIFIER OPEN_PAREN CLOSE_PAREN { $$ = new function_call((IDENTIFIER *) $1); }
@@ -226,8 +231,10 @@ expression:
 |	expression SHIFT_LEFT expression { $$ = new shift_left((expression *) $1, (expression *) $3); }
 |	expression SHIFT_RIGHT expression { $$ = new shift_left((expression *) $1, (expression *) $3); }
 |	LOGIC_NOT expression { $$ = new logic_not((expression *) $2); }
-|	expression INCREMENT { $$ = new increment((expression *) $1); }
-|	expression DECREMENT { $$ = new decrement((expression *) $1); }
+|	expression INCREMENT %prec POSTFIX_INCREMENT { $$ = new postfix_increment((expression *) $1); }
+|	expression DECREMENT %prec POSTFIX_DECREMENT { $$ = new postfix_decrement((expression *) $1); }
+|	INCREMENT expression %prec PREFIX_INCREMENT { $$ = new prefix_increment((expression *) $2); } 
+|	DECREMENT expression %prec PREFIX_DECREMENT { $$ = new prefix_decrement((expression *) $2); }
 |	IDENTIFIER EQUALS expression { $$ = new assignment((IDENTIFIER *) $1, (expression *) $3); }
 |	IDENTIFIER PLUS_EQUALS expression { $$ = new plus_assignment((IDENTIFIER *) $1, (expression *) $3); }
 |	IDENTIFIER MINUS_EQUALS expression { $$ = new minus_assignment((IDENTIFIER *) $1, (expression *) $3); }

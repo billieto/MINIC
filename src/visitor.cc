@@ -41,8 +41,24 @@ void Visitor::visitLogicOr(logic_or *node) { visitChildren(node); }
 void Visitor::visitLogicNot(logic_not *node) { visitChildren(node); }
 
 // Unary & Assignment
-void Visitor::visitIncrement(increment *node) { visitChildren(node); }
-void Visitor::visitDecrement(decrement *node) { visitChildren(node); }
+void Visitor::visitUnaryPlus(unary_plus *node) { visitChildren(node); }
+void Visitor::visitUnaryMinus(unary_minus *node) { visitChildren(node); }
+void Visitor::visitPostfixIncrement(postfix_increment *node)
+{
+    visitChildren(node);
+}
+void Visitor::visitPrefixIncrement(prefix_increment *node)
+{
+    visitChildren(node);
+}
+void Visitor::visitPostfixDecrement(postfix_decrement *node)
+{
+    visitChildren(node);
+}
+void Visitor::visitPrefixDecrement(prefix_decrement *node)
+{
+    visitChildren(node);
+}
 void Visitor::visitAssignment(assignment *node) { visitChildren(node); }
 
 // Bitwise Operations

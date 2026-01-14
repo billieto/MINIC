@@ -1,28 +1,28 @@
 #include "../lib/composite_concrete.hh"
 #include "../lib/composite.hh"
 #include "../lib/visitor.hh"
-#include <iostream>
-#include <list>
-#include <ostream>
 #include <string>
 #include <sys/types.h>
 #include <vector>
 
-// Signals
-struct continue_signal
-{
-};
-
-struct break_signal
-{
-};
-
-struct void_return_signal
-{
-};
-
 // Constructors
-NUMBER::NUMBER(int value) : STNode(NUMBER_NODE, {}) { m_value = value; }
+NUMBER::NUMBER(int value) : STNode(NUMBER_NODE, {})
+{
+    m_value = value;
+    m_value_type = T_INT;
+}
+
+NUMBER::NUMBER(float value) : STNode(NUMBER_NODE, {})
+{
+    m_value = value;
+    m_value_type = T_FLOAT;
+}
+
+NUMBER::NUMBER(double value) : STNode(NUMBER_NODE, {})
+{
+    m_value = value;
+    m_value_type = T_DOUBLE;
+}
 
 IDENTIFIER::IDENTIFIER(std::string str) : STNode(IDENTIFIER_NODE, {})
 {
@@ -33,6 +33,16 @@ expression::expression(NUMBER *NUMBER) : STNode(EXPRESSION_NODE, {NUMBER}) {}
 
 expression::expression(IDENTIFIER *IDENTIFIER)
     : STNode(EXPRESSION_NODE, {IDENTIFIER})
+{
+}
+
+unary_plus::unary_plus(expression *expression)
+    : STNode(UNARY_PLUS_NODE, {expression})
+{
+}
+
+unary_minus::unary_minus(expression *expression)
+    : STNode(UNARY_MINUS_NODE, {expression})
 {
 }
 
@@ -101,13 +111,23 @@ logic_not::logic_not(expression *expression)
 {
 }
 
-increment::increment(expression *expression)
-    : STNode(INCREMENT_NODE, {expression})
+prefix_increment::prefix_increment(expression *expression)
+    : STNode(PREFIX_INCREMENT_NODE, {expression})
 {
 }
 
-decrement::decrement(expression *expression)
-    : STNode(DECREMENT_NODE, {expression})
+postfix_increment::postfix_increment(expression *expression)
+    : STNode(POSTFIX_INCREMENT_NODE, {expression})
+{
+}
+
+prefix_decrement::prefix_decrement(expression *expression)
+    : STNode(PREFIX_DECREMENT_NODE, {expression})
+{
+}
+
+postfix_decrement::postfix_decrement(expression *expression)
+    : STNode(POSTFIX_DECREMENT_NODE, {expression})
 {
 }
 
@@ -214,6 +234,11 @@ statement::statement(expression *expression)
 
 statement::statement(compound_statement *compound_statement)
     : STNode(COMPMOUNT_STATEMENT_NODE, {compound_statement})
+{
+}
+
+statement::statement()
+    : STNode(STATEMENT_NODE, {})
 {
 }
 
@@ -385,7 +410,7 @@ std::vector<variable_declaration *> &variable_declaration_list::getVariables()
     return m_vars;
 }
 std::string variable_declaration::getName() { return m_name; }
-int variable_declaration::getValue() { return m_value; }
+Value variable_declaration::getValue() { return m_value; }
 dataType type_specifier::getType() { return m_type; }
 std::vector<parameter> &parameter_list::getParameters() { return parameters; }
 std::vector<STNode *> argument_list::getArguments() { return arguments; }
@@ -406,789 +431,6 @@ void parameter_list::add(dataType type, std::string name)
 {
     parameters.push_back({type, name});
 }
-
-// // Evaluate Methods
-// int NUMBER::evaluate() { return m_value; }
-
-// int IDENTIFIER::evaluate()
-// {
-//     Symbol *sym = SymbolTable::getInstance()->lookup(this->m_label);
-
-//     if (!sym)
-//     {
-//         std::cout << "Identifier not defined in scope" << std::endl;
-//         exit(1);
-//     }
-
-//     return sym->getValue();
-// }
-
-// int multiplication::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() * rightNode->evaluate();
-// }
-
-// int division::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     int result = rightNode->evaluate();
-//     if (!result)
-//     {
-//         std::cerr << "Trying to do a division by 0" << std::endl;
-//         exit(1);
-//     }
-
-//     return leftNode->evaluate() / result;
-// }
-
-// int addition::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() + rightNode->evaluate();
-// }
-
-// int subtraction::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() - rightNode->evaluate();
-// }
-
-// int less::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() < rightNode->evaluate();
-// }
-
-// int less_equals::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() <= rightNode->evaluate();
-// }
-
-// int greater::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() > rightNode->evaluate();
-// }
-
-// int greater_equals::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() >= rightNode->evaluate();
-// }
-
-// int logic_equals::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() == rightNode->evaluate();
-// }
-
-// int logic_not_equals::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() != rightNode->evaluate();
-// }
-
-// int logic_and::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() && rightNode->evaluate();
-// }
-
-// int logic_or::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() || rightNode->evaluate();
-// }
-
-// int logic_not::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     return !((*it)->evaluate());
-// }
-
-// int increment::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-
-//     IDENTIFIER *id = (IDENTIFIER *)(*it);
-
-//     if (!id)
-//     {
-//         std::cerr << "cant be none other that lvalue to increment" << std::endl;
-//         exit(1);
-//     }
-
-//     std::string name = id->getLabel();
-//     Symbol *sym = SymbolTable::getInstance()->lookup(name);
-
-//     if (!sym)
-//     {
-//         std::cerr << "Variable: \"" << name << "\" is not declared"
-//                   << std::endl;
-//         exit(1);
-//     }
-
-//     int old_value = (*it)->evaluate();
-
-//     sym->setValue(old_value + 1);
-
-//     return old_value;
-// }
-
-// int decrement::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-
-//     IDENTIFIER *id = (IDENTIFIER *)(*it);
-
-//     if (!id)
-//     {
-//         std::cerr << "cant be none other that lvalue to increment" << std::endl;
-//     }
-
-//     std::string name = id->getLabel();
-//     Symbol *sym = SymbolTable::getInstance()->lookup(name);
-
-//     if (!sym)
-//     {
-//         std::cerr << "Variable: \"" << name << "\" is not declared"
-//                   << std::endl;
-//         exit(1);
-//     }
-
-//     int old_value = (*it)->evaluate();
-
-//     sym->setValue(old_value - 1);
-
-//     return old_value;
-// }
-
-// int assignment::evaluate()
-// {
-//     auto it = this->STNode::getChildrenList().begin();
-
-//     std::string name = ((IDENTIFIER *)(*it))->getLabel();
-//     Symbol *sym = SymbolTable::getInstance()->lookup(name);
-
-//     if (!sym)
-//     {
-//         sym = SymbolTable::getInstance()->lookupGlobal(name);
-//         if (!sym || sym->getIsFunction())
-//         {
-//             std::cerr << "Variable: \"" << name << "\" is not declared"
-//                       << std::endl;
-//             exit(1);
-//         }
-//     }
-
-//     it++;
-//     int result = (*it)->evaluate();
-//     sym->setValue(result);
-
-//     // Debug print
-//     std::cout << name << "=" << std::to_string(result) << std::endl;
-
-//     return sym->getValue();
-// }
-
-// int bit_wise_or::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() | rightNode->evaluate();
-// }
-
-// int bit_wise_and::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() & rightNode->evaluate();
-// }
-
-// int bit_wise_xor::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() ^ rightNode->evaluate();
-// }
-
-// int bit_wise_not::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-
-//     return ~((*it)->evaluate());
-// }
-
-// int shift_left::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() << rightNode->evaluate();
-// }
-
-// int shift_right::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() >> rightNode->evaluate();
-// }
-
-// int plus_assignment::evaluate()
-// {
-//     auto it = this->STNode::getChildrenList().begin();
-
-//     std::string name = ((IDENTIFIER *)(*it))->getLabel();
-//     Symbol *sym = SymbolTable::getInstance()->lookup(name);
-
-//     if (!sym)
-//     {
-//         sym = SymbolTable::getInstance()->lookupGlobal(name);
-//         if (!sym || sym->getIsFunction())
-//         {
-//             std::cerr << "Variable: \"" << name << "\" is not declared"
-//                       << std::endl;
-//             exit(1);
-//         }
-//     }
-
-//     it++;
-//     int result = (*it)->evaluate();
-//     sym->setValue((sym->getValue() + result));
-
-//     // Debug print
-//     std::cout << name << "=" << std::to_string(sym->getValue()) << std::endl;
-
-//     return sym->getValue();
-// }
-
-// int minus_assignment::evaluate()
-// {
-//     auto it = this->STNode::getChildrenList().begin();
-
-//     std::string name = ((IDENTIFIER *)(*it))->getLabel();
-//     Symbol *sym = SymbolTable::getInstance()->lookup(name);
-
-//     if (!sym)
-//     {
-//         sym = SymbolTable::getInstance()->lookupGlobal(name);
-//         if (!sym || sym->getIsFunction())
-//         {
-//             std::cerr << "Variable: \"" << name << "\" is not declared"
-//                       << std::endl;
-//             exit(1);
-//         }
-//     }
-
-//     it++;
-//     int result = (*it)->evaluate();
-//     sym->setValue((sym->getValue() - result));
-
-//     // Debug print
-//     std::cout << name << "=" << std::to_string(sym->getValue()) << std::endl;
-
-//     return sym->getValue();
-// }
-
-// int mul_assignment::evaluate()
-// {
-//     auto it = this->STNode::getChildrenList().begin();
-
-//     std::string name = ((IDENTIFIER *)(*it))->getLabel();
-//     Symbol *sym = SymbolTable::getInstance()->lookup(name);
-
-//     if (!sym)
-//     {
-//         sym = SymbolTable::getInstance()->lookupGlobal(name);
-//         if (!sym || sym->getIsFunction())
-//         {
-//             std::cerr << "Variable: \"" << name << "\" is not declared"
-//                       << std::endl;
-//             exit(1);
-//         }
-//     }
-
-//     it++;
-//     int result = (*it)->evaluate();
-//     sym->setValue((sym->getValue() * result));
-
-//     // Debug print
-//     std::cout << name << "=" << std::to_string(sym->getValue()) << std::endl;
-
-//     return sym->getValue();
-// }
-
-// int div_assignment::evaluate()
-// {
-//     auto it = this->STNode::getChildrenList().begin();
-
-//     std::string name = ((IDENTIFIER *)(*it))->getLabel();
-//     Symbol *sym = SymbolTable::getInstance()->lookup(name);
-
-//     if (!sym)
-//     {
-//         sym = SymbolTable::getInstance()->lookupGlobal(name);
-//         if (!sym || sym->getIsFunction())
-//         {
-//             std::cerr << "Variable: \"" << name << "\" is not declared"
-//                       << std::endl;
-//             exit(1);
-//         }
-//     }
-
-//     it++;
-//     int result = (*it)->evaluate();
-//     if (!result)
-//     {
-//         std::cerr << "Trying to do a division by 0" << std::endl;
-//         exit(1);
-//     }
-
-//     sym->setValue((sym->getValue() / result));
-
-//     // Debug print
-//     std::cout << name << "=" << std::to_string(sym->getValue()) << std::endl;
-
-//     return sym->getValue();
-// }
-
-// int mod_assignment::evaluate()
-// {
-//     auto it = this->STNode::getChildrenList().begin();
-
-//     std::string name = ((IDENTIFIER *)(*it))->getLabel();
-//     Symbol *sym = SymbolTable::getInstance()->lookup(name);
-
-//     if (!sym)
-//     {
-//         sym = SymbolTable::getInstance()->lookupGlobal(name);
-//         if (!sym || sym->getIsFunction())
-//         {
-//             std::cerr << "Variable: \"" << name << "\" is not declared"
-//                       << std::endl;
-//             exit(1);
-//         }
-//     }
-
-//     it++;
-//     int result = (*it)->evaluate();
-//     sym->setValue((sym->getValue() % result));
-
-//     // Debug print
-//     std::cout << name << "=" << std::to_string(sym->getValue()) << std::endl;
-
-//     return sym->getValue();
-// }
-
-// int mod::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     STNode *leftNode = *it;
-//     it++;
-//     STNode *rightNode = *it;
-
-//     return leftNode->evaluate() % rightNode->evaluate();
-// }
-
-// int variable_declaration_statement::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-
-//     dataType currentType = ((type_specifier *)(*it))->getType();
-
-//     it++;
-//     std::vector<variable_declaration *> varList =
-//         ((variable_declaration_list *)(*it))->getVariables();
-
-//     for (auto var : varList)
-//     {
-//         var->evaluate();
-
-//         Symbol sym;
-//         sym.setType(currentType);
-//         sym.setName(var->getName());
-//         sym.setValue(var->getValue());
-//         sym.setIsFunction(false);
-
-//         if (!SymbolTable::getInstance()->insert(sym))
-//         { // Semantic Error
-//             std::cerr << "Variable " << sym.getName() << " already exists."
-//                       << std::endl;
-//         }
-//     }
-
-//     return 0;
-// }
-
-// int variable_declaration::evaluate()
-// {
-//     auto &temp = this->getChildrenList();
-
-//     auto it = temp.begin();
-//     m_name = ((IDENTIFIER *)(*it))->getLabel();
-
-//     if (temp.size() > 1)
-//     {
-//         it++;
-//         m_value = (*it)->evaluate();
-//     }
-
-//     return m_value;
-// }
-
-// int statement::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-
-//     return (*it)->evaluate();
-// }
-
-// int statement_list::evaluate()
-// {
-//     int result = 0;
-
-//     for (const auto &child : this->getChildrenList())
-//     {
-//         result += child->evaluate();
-//     }
-
-//     return result;
-// }
-
-// int compound_statement::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-
-//     return (*it)->evaluate();
-// }
-
-// int condition::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-
-//     return (*it)->evaluate();
-// }
-
-// int if_statement::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-//     int cond = (*it)->evaluate();
-//     int result = 0;
-
-//     it++;
-
-//     if (cond)
-//     {
-//         result = (*it)->evaluate();
-//     }
-//     else if (this->getChildrenList().size() ==
-//              3) // Maybe it dose not work that well :(
-//     {
-//         it++;
-//         result = (*it)->evaluate();
-//     }
-
-//     std::cout << result << std::endl;
-//     return result;
-// }
-
-// int while_statement::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-
-//     condition *cond = (condition *)(*it);
-//     it++;
-
-//     while (cond->evaluate())
-//     {
-//         try
-//         {
-//             (*it)->evaluate();
-//         }
-//         catch (continue_signal)
-//         {
-//             continue;
-//         }
-//         catch (break_signal)
-//         {
-//             break;
-//         }
-//     }
-//     // return statement auto-thrown into the function call node.
-//     return 0;
-// }
-
-// int do_while_statement::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-
-//     compound_statement *body = (compound_statement *)(*it);
-//     it++;
-
-//     do
-//     {
-//         try
-//         {
-//             body->evaluate();
-//         }
-//         catch (continue_signal)
-//         {
-//             continue;
-//         }
-//         catch (break_signal)
-//         {
-//             break;
-//         }
-//     } while ((*it)->evaluate());
-
-//     return 0;
-// }
-
-// int for_statement::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-
-//     (*it)->evaluate(); // first part or for loop
-//     it++;
-
-//     STNode *cond = (*it); // second part
-//     it++;
-
-//     STNode *inc = (*it); // third part
-//     it++;
-
-//     while (cond->evaluate())
-//     {
-//         try
-//         {
-//             (*it)->evaluate(); // the body
-//         }
-//         catch (continue_signal)
-//         {
-//             continue;
-//         }
-//         catch (break_signal)
-//         {
-//             break;
-//         }
-
-//         inc->evaluate();
-//     }
-
-//     return 0;
-// }
-
-// int continue_node::evaluate() { throw continue_signal(); }
-
-// int break_node::evaluate() { throw break_signal(); }
-
-// int function_call::evaluate()
-// {
-//     std::vector<int> finalValues;
-//     auto childs = this->getChildrenList();
-
-//     auto it = childs.begin();
-//     std::string func_name = ((IDENTIFIER *)*it)->getLabel();
-
-//     // Debugging print
-//     // std::cout << func_name << std::endl;
-
-//     Symbol *def = SymbolTable::getInstance()->lookupGlobal(func_name);
-
-//     if (!def)
-//     { // Need to make it so the error is emitted from the parser.
-//         std::cerr << "The function you try to call isn't defined" << std::endl;
-//         exit(1);
-//     }
-
-//     compound_statement *func_body =
-//         (compound_statement *)(def->getFunctionBody());
-
-//     if (!func_body)
-//     { // Need to make it so the error is emitted from the parser.
-//         std::cerr << "The function you try to call isn't implemented"
-//                   << std::endl;
-//         exit(1);
-//     }
-
-//     if (childs.size() == 1) // No arguments
-//     {
-//     }
-//     else // With arguments
-//     {
-//         it++;
-//         auto expressions = ((argument_list *)(*it))->getArguments();
-
-//         for (auto expr : expressions)
-//         {
-//             finalValues.push_back(expr->evaluate());
-//         }
-//     }
-
-//     // Here it should do the type check as well!
-//     std::vector<parameter> &func_params = def->getParameters();
-//     if (func_params.size() != finalValues.size())
-//     {
-//         std::cerr
-//             << "The function you try to call dose not have the same arguments "
-//                "as parameters that are defined"
-//             << std::endl;
-//         exit(1);
-//     }
-
-//     SymbolTable::getInstance()->enterScope(
-//         SymbolTable::getInstance()->getCurrentId() + 1);
-
-//     for (size_t i = 0; i < func_params.size(); i++)
-//     {
-//         Symbol param;
-//         param.setName(func_params[i].name);
-//         param.setType(func_params[i].type);
-//         param.setValue(finalValues[i]);
-
-//         SymbolTable::getInstance()->insert(param);
-//     }
-
-//     try
-//     {
-//         func_body->evaluate();
-//     }
-//     catch (int returnValue)
-//     {
-//         SymbolTable::getInstance()->exitScope();
-
-//         if (def->getType() == T_VOID)
-//         {
-//             std::cerr << "Void functions should not return a value"
-//                       << std::endl;
-//             exit(1); // Should i exit or not?
-//         }
-
-//         return returnValue;
-//     }
-//     catch (void_return_signal)
-//     {
-//         SymbolTable::getInstance()->exitScope();
-
-//         if (def->getType() != T_VOID)
-//         {
-//             std::cerr << "Non-void functions should return a value"
-//                       << std::endl;
-//             exit(1); // Should i exit or not?
-//         }
-//     }
-
-//     SymbolTable::getInstance()->exitScope();
-
-//     if (def->getType() != T_VOID)
-//     { // Semantic-error
-//         std::cerr << "Non-void functions should return a value" << std::endl;
-//         exit(1); // Should i exit or not?
-//     }
-
-//     return 0;
-// }
-
-// int return_node::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-
-//     if (!(*it)) // return for void functions
-//     {
-//         throw void_return_signal();
-//     }
-//     else
-//     {
-//         throw((*it)->evaluate());
-//     }
-// }
-
-// int program::evaluate()
-// {
-//     auto it = this->getChildrenList().begin();
-
-//     (*it)->evaluate();
-
-//     Symbol *entry = SymbolTable::getInstance()->lookupGlobal("main");
-//     if (entry == nullptr || entry->getFunctionBody())
-//     {
-//         std::cerr << "Error: Linker error - undefined reference to 'main'"
-//                   << std::endl;
-//         exit(1);
-//     }
-
-//     SymbolTable::getInstance()->enterScope(0); // Main Scope
-//     // When i will make scopes for every compound statement this will leave
-//     // Because function_body is always a compound statement
-//     int result = entry->getFunctionBody()->evaluate();
-//     SymbolTable::getInstance()->exitScope();
-
-//     return result;
-// }
 
 // Accepts for visitor
 // --- Leaf Nodes ---
@@ -1215,8 +457,12 @@ void logic_or::accept(Visitor &v) { v.visitLogicOr(this); }
 void logic_not::accept(Visitor &v) { v.visitLogicNot(this); }
 
 // --- Unary & Assignment ---
-void increment::accept(Visitor &v) { v.visitIncrement(this); }
-void decrement::accept(Visitor &v) { v.visitDecrement(this); }
+void unary_plus::accept(Visitor &v) { v.visitUnaryPlus(this); }
+void unary_minus::accept(Visitor &v) { v.visitUnaryMinus(this); }
+void postfix_increment::accept(Visitor &v) { v.visitPostfixIncrement(this); }
+void prefix_increment::accept(Visitor &v) { v.visitPrefixIncrement(this); }
+void postfix_decrement::accept(Visitor &v) { v.visitPostfixDecrement(this); }
+void prefix_decrement::accept(Visitor &v) { v.visitPrefixDecrement(this); }
 void assignment::accept(Visitor &v) { v.visitAssignment(this); }
 
 // --- Bitwise ---
