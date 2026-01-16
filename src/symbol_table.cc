@@ -159,6 +159,8 @@ VarSymbol::VarSymbol(Value value, std::string name, dataType type)
 
 Value VarSymbol::getValue() { return m_value; }
 
+dataType VarSymbol::getValueType() { return m_value_type;}
+
 void VarSymbol::setValue(Value value) { m_value = value; }
 
 int ScopeFrame::getId() { return m_function_id; }

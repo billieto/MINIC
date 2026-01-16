@@ -9,19 +9,13 @@
 NUMBER::NUMBER(int value) : STNode(NUMBER_NODE, {})
 {
     m_value = value;
-    m_value_type = T_INT;
+    this->setResolvedType(T_INT);
 }
 
 NUMBER::NUMBER(float value) : STNode(NUMBER_NODE, {})
 {
     m_value = value;
-    m_value_type = T_FLOAT;
-}
-
-NUMBER::NUMBER(double value) : STNode(NUMBER_NODE, {})
-{
-    m_value = value;
-    m_value_type = T_DOUBLE;
+    this->setResolvedType(T_FLOAT);
 }
 
 IDENTIFIER::IDENTIFIER(std::string str) : STNode(IDENTIFIER_NODE, {})

@@ -10,12 +10,6 @@ void EvaluatorVisitor::visitIDENTIFIER(IDENTIFIER *node)
     VarSymbol *sym = dynamic_cast<VarSymbol *>(
         SymbolTable::getInstance()->lookup(node->getLabel()));
 
-    if (!sym)
-    {
-        std::cerr << "Identifier not defined in scope" << std::endl;
-        exit(1);
-    }
-
     m_result = sym->getValue();
 }
 
@@ -92,7 +86,7 @@ void EvaluatorVisitor::visitDivision(division *node)
 
     if (!right_result)
     {
-        std::cerr << "Cant divide with 0" << std::endl;
+        std::cerr << "Runtime Error: Cant divide with 0" << std::endl;
         exit(1);
     }
 
@@ -260,26 +254,11 @@ void EvaluatorVisitor::visitPostfixIncrement(postfix_increment *node)
 {
     auto it = node->getChildrenList().begin();
 
-    IDENTIFIER *id = dynamic_cast<IDENTIFIER *>(*it);
-    // TODO: This is the work of the type checker later
-    if (!id)
-    {
-        std::cerr << "Semantic Error: Increment operator (++) requires a "
-                     "variable (l-value)."
-                  << std::endl;
-        exit(1);
-    }
+    IDENTIFIER *id = static_cast<IDENTIFIER *>(*it);
 
     std::string name = id->getLabel();
     VarSymbol *sym =
-        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
-
-    if (!sym)
-    {
-        std::cerr << "Runtime Error: Variable \"" << name
-                  << "\" is not declared" << std::endl;
-        exit(1);
-    }
+        static_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     Value old_value = sym->getValue();
     sym->setValue(old_value + 1);
@@ -290,26 +269,11 @@ void EvaluatorVisitor::visitPostfixDecrement(postfix_decrement *node)
 {
     auto it = node->getChildrenList().begin();
 
-    IDENTIFIER *id = dynamic_cast<IDENTIFIER *>(*it);
-    // TODO: This is the work of the type checker later
-    if (!id)
-    {
-        std::cerr << "Semantic Error: Increment operator (++) requires a "
-                     "variable (l-value)."
-                  << std::endl;
-        exit(1);
-    }
+    IDENTIFIER *id = static_cast<IDENTIFIER *>(*it);
 
     std::string name = id->getLabel();
     VarSymbol *sym =
-        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
-
-    if (!sym)
-    {
-        std::cerr << "Runtime Error: Variable \"" << name
-                  << "\" is not declared" << std::endl;
-        exit(1);
-    }
+        static_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     Value old_value = sym->getValue();
     sym->setValue(old_value - 1);
@@ -320,26 +284,11 @@ void EvaluatorVisitor::visitPrefixIncrement(prefix_increment *node)
 {
     auto it = node->getChildrenList().begin();
 
-    IDENTIFIER *id = dynamic_cast<IDENTIFIER *>(*it);
-    // TODO: This is the work of the type checker later
-    if (!id)
-    {
-        std::cerr << "Semantic Error: Increment operator (++) requires a "
-                     "variable (l-value)."
-                  << std::endl;
-        exit(1);
-    }
+    IDENTIFIER *id = static_cast<IDENTIFIER *>(*it);
 
     std::string name = id->getLabel();
     VarSymbol *sym =
-        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
-
-    if (!sym)
-    {
-        std::cerr << "Runtime Error: Variable \"" << name
-                  << "\" is not declared" << std::endl;
-        exit(1);
-    }
+        static_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     sym->setValue(sym->getValue() + 1);
     m_result = sym->getValue();
@@ -349,26 +298,11 @@ void EvaluatorVisitor::visitPrefixDecrement(prefix_decrement *node)
 {
     auto it = node->getChildrenList().begin();
 
-    IDENTIFIER *id = dynamic_cast<IDENTIFIER *>(*it);
-    // TODO: This is the work of the type checker later
-    if (!id)
-    {
-        std::cerr << "Semantic Error: Increment operator (++) requires a "
-                     "variable (l-value)."
-                  << std::endl;
-        exit(1);
-    }
+    IDENTIFIER *id = static_cast<IDENTIFIER *>(*it);
 
     std::string name = id->getLabel();
     VarSymbol *sym =
-        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
-
-    if (!sym)
-    {
-        std::cerr << "Runtime Error: Variable \"" << name
-                  << "\" is not declared" << std::endl;
-        exit(1);
-    }
+        static_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     sym->setValue(sym->getValue() - 1);
     m_result = sym->getValue();
@@ -382,13 +316,6 @@ void EvaluatorVisitor::visitAssignment(assignment *node)
 
     VarSymbol *sym =
         dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
-
-    if (!sym) // In my evaluation methods with polymorphism i just the global
-              // stack as well if any errors happen
-    {
-        std::cerr << "Semantic Error: identifier not declared" << std::endl;
-        exit(1);
-    }
 
     it++;
     (*it)->accept(*this);
@@ -405,14 +332,7 @@ void EvaluatorVisitor::visitPlusAssignment(plus_assignment *node)
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
     VarSymbol *sym =
-        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
-
-    if (!sym) // In my evaluation methods with polymorphism i just the global
-              // stack as well if any errors happen
-    {
-        std::cerr << "Semantic Error: identifier not declared" << std::endl;
-        exit(1);
-    }
+        static_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     it++;
     (*it)->accept(*this);
@@ -429,14 +349,7 @@ void EvaluatorVisitor::visitMinusAssignment(minus_assignment *node)
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
     VarSymbol *sym =
-        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
-
-    if (!sym) // In my evaluation methods with polymorphism i just the global
-              // stack as well if any errors happen
-    {
-        std::cerr << "Semantic Error: identifier not declared" << std::endl;
-        exit(1);
-    }
+        static_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     it++;
     (*it)->accept(*this);
@@ -453,14 +366,7 @@ void EvaluatorVisitor::visitMulAssignment(mul_assignment *node)
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
     VarSymbol *sym =
-        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
-
-    if (!sym) // In my evaluation methods with polymorphism i just the global
-              // stack as well if any errors happen
-    {
-        std::cerr << "Semantic Error: identifier not declared" << std::endl;
-        exit(1);
-    }
+        static_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     it++;
     (*it)->accept(*this);
@@ -477,20 +383,13 @@ void EvaluatorVisitor::visitDivAssignment(div_assignment *node)
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
     VarSymbol *sym =
-        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
-
-    if (!sym) // In my evaluation methods with polymorphism i just the global
-              // stack as well if any errors happen
-    {
-        std::cerr << "Semantic Error: identifier not declared" << std::endl;
-        exit(1);
-    }
+        static_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     it++;
     (*it)->accept(*this);
     if (!m_result)
     {
-        std::cerr << "Trying to do a division by 0" << std::endl;
+        std::cerr << "Runtime Error: Cant divide with 0" << std::endl;
         exit(1);
     }
     sym->setValue(sym->getValue() / m_result);
@@ -506,14 +405,7 @@ void EvaluatorVisitor::visitModAssignment(mod_assignment *node)
     std::string name = static_cast<IDENTIFIER *>(*it)->getLabel();
 
     VarSymbol *sym =
-        dynamic_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
-
-    if (!sym) // In my evaluation methods with polymorphism i just the global
-              // stack as well if any errors happen
-    {
-        std::cerr << "Semantic Error: identifier not declared" << std::endl;
-        exit(1);
-    }
+        static_cast<VarSymbol *>(SymbolTable::getInstance()->lookup(name));
 
     it++;
     (*it)->accept(*this);
@@ -561,12 +453,7 @@ void EvaluatorVisitor::visitVariableDeclarationStatement(
                 ->getLabel(),
             currentType);
 
-        if (!SymbolTable::getInstance()->insert(sym))
-        { // Semantic Error
-            std::cerr << "Variable " << sym->getName() << " already exists."
-                      << std::endl;
-            exit(1);
-        }
+        SymbolTable::getInstance()->insert(sym);
     }
 }
 
@@ -580,11 +467,6 @@ void EvaluatorVisitor::visitStatement(statement *node)
     }
 }
 
-void EvaluatorVisitor::visitCompoundStatement(compound_statement *node)
-{
-    node->getChildrenList().front()->accept(*this);
-}
-
 void EvaluatorVisitor::visitCondition(condition *node)
 {
     node->getChildrenList().front()->accept(*this);
@@ -592,9 +474,6 @@ void EvaluatorVisitor::visitCondition(condition *node)
 
 void EvaluatorVisitor::visitIfStatement(if_statement *node)
 {
-    SymbolTable::getInstance()->enterScope(
-        SymbolTable::getInstance()->getCurrentId());
-
     auto it = node->getChildrenList().begin();
 
     (*it)->accept(*this);
@@ -606,19 +485,14 @@ void EvaluatorVisitor::visitIfStatement(if_statement *node)
         (*it)->accept(*this);
     }
     else if (node->getChildrenList().size() == 3)
-    { // Maybe it dose not work that well :(
+    {
         it++;
         (*it)->accept(*this);
     }
-
-    SymbolTable::getInstance()->exitScope();
 }
 
 void EvaluatorVisitor::visitWhileStatement(while_statement *node)
 {
-    SymbolTable::getInstance()->enterScope(
-        SymbolTable::getInstance()->getCurrentId());
-
     auto it = node->getChildrenList().begin();
 
     condition *cond = static_cast<condition *>(*it);
@@ -642,15 +516,10 @@ void EvaluatorVisitor::visitWhileStatement(while_statement *node)
 
         cond->accept(*this);
     }
-
-    SymbolTable::getInstance()->exitScope();
 }
 
 void EvaluatorVisitor::visitDoWhileStatement(do_while_statement *node)
 {
-    SymbolTable::getInstance()->enterScope(
-        SymbolTable::getInstance()->getCurrentId());
-
     auto it = node->getChildrenList().begin();
 
     compound_statement *body = static_cast<compound_statement *>(*it);
@@ -672,15 +541,10 @@ void EvaluatorVisitor::visitDoWhileStatement(do_while_statement *node)
         }
         (*it)->accept(*this);
     } while (m_result);
-
-    SymbolTable::getInstance()->exitScope();
 }
 
 void EvaluatorVisitor::visitForStatement(for_statement *node)
 {
-    SymbolTable::getInstance()->enterScope(
-        SymbolTable::getInstance()->getCurrentId());
-
     auto it = node->getChildrenList().begin();
 
     (*it)->accept(*this); // first part or for loop
@@ -711,24 +575,16 @@ void EvaluatorVisitor::visitForStatement(for_statement *node)
         inc->accept(*this);
         cond->accept(*this);
     }
-
-    SymbolTable::getInstance()->exitScope();
 }
 
 void EvaluatorVisitor::visitContinue(continue_node *node)
 {
     throw continue_signal();
-
-    // Compiler cries if not used
-    node->getChildrenList().front()->accept(*this);
 }
 
 void EvaluatorVisitor::visitBreak(break_node *node)
 {
     throw break_signal();
-
-    // Compiler cries if not used
-    node->getChildrenList().front()->accept(*this);
 }
 
 void EvaluatorVisitor::visitReturn(return_node *node)
@@ -758,21 +614,8 @@ void EvaluatorVisitor::visitFunctionCall(function_call *node)
     FuncSymbol *def = dynamic_cast<FuncSymbol *>(
         SymbolTable::getInstance()->lookupGlobal(func_name));
 
-    if (!def)
-    { // Need to make it so the error is emitted from the parser.
-        std::cerr << "The function you try to call isn't defined" << std::endl;
-        exit(1);
-    }
-
     compound_statement *func_body =
         static_cast<compound_statement *>(def->getFunctionBody());
-
-    if (!func_body)
-    { // Need to make it so the error is emitted from the parser.
-        std::cerr << "The function you try to call isn't implemented"
-                  << std::endl;
-        exit(1);
-    }
 
     if (childs.size() == 1) // No arguments
     {
@@ -789,16 +632,8 @@ void EvaluatorVisitor::visitFunctionCall(function_call *node)
         }
     }
 
-    // Here it should do the type check as well!
+    // Calculating the arguments of the function call
     std::vector<parameter> &func_params = def->getParameters();
-    if (func_params.size() != finalValues.size()) // TODO: type checker work
-    {
-        std::cerr
-            << "The function you try to call dose not have the same arguments "
-               "as parameters that are defined"
-            << std::endl;
-        exit(1);
-    }
 
     SymbolTable::getInstance()->enterScope(
         SymbolTable::getInstance()->getCurrentId() + 1);
@@ -811,8 +646,6 @@ void EvaluatorVisitor::visitFunctionCall(function_call *node)
         SymbolTable::getInstance()->insert(param);
     }
 
-    // I need this bool to know if non void function have return statement
-    bool return_happened = false;
     try
     {
         func_body->accept(*this);
@@ -820,47 +653,19 @@ void EvaluatorVisitor::visitFunctionCall(function_call *node)
     catch (Value return_value)
     {
         SymbolTable::getInstance()->exitScope();
-
-        if (def->getReturnType() == T_VOID) // TODO: Type checker work
-        {
-            std::cerr << "Void functions should not return a value"
-                      << std::endl;
-            exit(1); // Should i exit or not?
-        }
-
-        return_happened = true;
     }
     catch (void_return_signal)
     {
         SymbolTable::getInstance()->exitScope();
 
-        if (def->getReturnType() != T_VOID)
-        {
-            std::cerr << "Non-void functions should return a value"
-                      << std::endl;
-            exit(1); // Should i exit or not?
-        }
-        // Idk if this is necessary
         m_result = 0;
-
-        return_happened = true;
     }
 
-    if (def->getReturnType() != T_VOID &&
-        return_happened == false) // TODO: type checker
-    {
-        SymbolTable::getInstance()->exitScope();
-
-        std::cerr << "Non-void functions should return a value" << std::endl;
-        exit(1); // Should i exit or not?
-    }
+    SymbolTable::getInstance()->exitScope();
 }
 
 void EvaluatorVisitor::visitProgram(program *node)
 {
-    // i do this because i dont want the compiler to cry
-    // auto it = node->getChildrenList().begin();
-
     FuncSymbol *entry = dynamic_cast<FuncSymbol *>(
         SymbolTable::getInstance()->lookupGlobal("main"));
     if (entry == nullptr || !(entry->getFunctionBody()))
@@ -879,7 +684,7 @@ void EvaluatorVisitor::visitProgram(program *node)
         exit(1);
     }
 
-    SymbolTable::getInstance()->enterScope(1);
+    SymbolTable::getInstance()->enterScope(SymbolTable::getInstance()->getCurrentId() + 1);
     try
     {
         entry->getFunctionBody()->accept(*this);
@@ -897,7 +702,5 @@ void EvaluatorVisitor::visitProgram(program *node)
         }
     }
 
-    // TODO: This should be on type checker
-    // Handle main nor having return statement.
     SymbolTable::getInstance()->exitScope();
 }

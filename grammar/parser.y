@@ -34,7 +34,7 @@
 %token LESS LESS_EQUALS GREATER GREATER_EQUALS 
 %token LOGIC_EQUALS LOGIC_AND LOGIC_OR LOGIC_NOT
 %token COMMA RETURN VAR_PRIORITY MOD MOD_EQUALS
-%token INT_TYPE FLOAT_TYPE VOID_TYPE DOUBLE_TYPE CHAR_TYPE
+%token INT_TYPE FLOAT_TYPE VOID_TYPE
 %token PLUS_EQUALS MINUS_EQUALS MUL_EQUALS DIV_EQUALS
 %token BIT_WISE_OR BIT_WISE_AND BIT_WISE_XOR BIT_WISE_NOT
 %token CONTINUE BREAK WHILE DO FOR UNARY_MINUS UNARY_PLUS
@@ -198,7 +198,7 @@ do_while_statement:
 	DO compound_statement WHILE condition { $$ = new do_while_statement((compound_statement *) $2, (condition *) $4); }
 ;
 
-for_statement:
+for_statement: // TODO: Need to make it so it can support Semicolon alone
 	FOR OPEN_PAREN expression SEMICOLON expression SEMICOLON expression CLOSE_PAREN compound_statement
 	{ $$ = new for_statement((expression *) $3, (expression *) $5, (expression *) $7, (compound_statement *) $9); }
 ;
@@ -246,15 +246,15 @@ expression:
 type_specifier:
 	INT_TYPE { $$ = new type_specifier(T_INT); }
 |	FLOAT_TYPE { $$ = new type_specifier(T_FLOAT); }
-|	CHAR_TYPE { $$ = new type_specifier(T_CHAR); }
-|	DOUBLE_TYPE { $$ = new type_specifier(T_DOUBLE); }
 |	VOID_TYPE { $$ = new type_specifier(T_VOID); }
+/* |	DOUBLE_TYPE { $$ = new type_specifier(T_DOUBLE); } */
+/* |	CHAR_TYPE { $$ = new type_specifier(T_CHAR); } */
 ;
 
 %%
 
 void yy::parser::error(const std::string& message)
 {
-    std::cerr << "error: " << message << std::endl;
+    std::cerr << message << std::endl;
 	exit(1);
 }

@@ -72,7 +72,7 @@ STNode::STNode(nodeType nodeType, std::initializer_list<STNode *> children)
     m_nodeType = nodeType;
     m_serial = m_serialCounter++;
     m_graphvizLabel = g_nodeTypeLabels[m_nodeType];
-
+    m_resolved_type = T_VOID;
     for (const auto &child : children)
     {
         m_children.push_back(child);
@@ -104,16 +104,10 @@ void STNode::printSyntaxTree(std::ofstream *dot)
 
 std::list<STNode *> &STNode::getChildrenList() { return m_children; }
 
-int STNode::evaluate()
-{
-    for (const auto &child : m_children)
-    {
-        child->evaluate();
-    }
-
-    return 0;
-}
-
 STNode *STNode::getParent() { return m_parent; }
+
+dataType STNode::getResolvedType() { return m_resolved_type; }
+
+void STNode::setResolvedType(dataType type) { m_resolved_type = type; }
 
 void STNode::accept(Visitor &v) { v.visitChildren(this); }

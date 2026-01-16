@@ -3,18 +3,10 @@
 #define SYMBOL_TABLE_
 
 #include "composite.hh"
+#include "types.hh"
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-enum dataType
-{
-    T_INT,
-    T_CHAR,
-    T_FLOAT,
-    T_DOUBLE,
-    T_VOID
-};
 
 struct parameter
 {
@@ -29,12 +21,6 @@ struct parameter
     }
 
     bool operator!=(const parameter &other) const { return !(*this == other); }
-};
-
-enum SymbolType
-{
-    VAR_SYM,
-    FUNC_SYM
 };
 
 class Symbol
@@ -85,6 +71,7 @@ class VarSymbol : public Symbol
     VarSymbol(Value value, std::string name, dataType type);
 
     Value getValue();
+    dataType getValueType();
 
     void setValue(Value value);
 };

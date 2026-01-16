@@ -1,6 +1,5 @@
 #include "../lib/declarator_visitor.hh"
 #include "../lib/evaluator_visitor.hh"
-#include <iostream>
 #include <vector>
 
 void DeclaratorVisitor::visitFunctionDefinition(function_definition *node)
@@ -21,30 +20,12 @@ void DeclaratorVisitor::visitFunctionDefinition(function_definition *node)
 
     if (existing)
     {
-        if (existing->getReturnType() != return_type ||
-            existing->getParameters() != params)
-        {
-            // TODO: Maybe will move this into type checker
-            std::cerr << "Conflicting types for function" << std::endl;
-            exit(1);
-        }
-
-        if (existing->getFunctionBody() != nullptr)
-        {
-            // TODO: Maybe will move this into type checker
-            std::cerr << "Function already defined" << std::endl;
-            exit(1);
-        }
         existing->setFunctionBody(body);
     }
     else
     {
-        // FuncSymbol sym{return_type, body, params, id};
         FuncSymbol *sym = new FuncSymbol(return_type, body, params, id);
-        if (!SymbolTable::getInstance()->insertGlobal(sym))
-        {
-            std::cerr << "Function: " + id + "already defined" << std::endl;
-        }
+        SymbolTable::getInstance()->insertGlobal(sym);
     }
 }
 
@@ -61,12 +42,7 @@ void DeclaratorVisitor::visitFunctionDeclaration(function_declaration *node)
 
     FuncSymbol *sym = new FuncSymbol(return_type, nullptr, params, id);
 
-    if (!SymbolTable::getInstance()->insert(sym))
-    {
-        // TODO: Maybe will move this into type checker
-        std::cerr << "Function already declared" << std::endl;
-        exit(1);
-    }
+    SymbolTable::getInstance()->insert(sym);
 }
 
 void DeclaratorVisitor::visitVariableDeclaration(variable_declaration *node)
@@ -87,8 +63,6 @@ void DeclaratorVisitor::visitVariableDeclaration(variable_declaration *node)
         EvaluatorVisitor eval;
         (*it)->accept(eval);
         m_result = eval.getResult();
-
-        // node->setValue(result);
     }
 }
 
@@ -114,11 +88,6 @@ void DeclaratorVisitor::visitVariableDeclarationStatement(
                 ->getLabel(),
             currentType);
 
-        if (!SymbolTable::getInstance()->insertGlobal(sym))
-        { // Semantic Error
-            std::cerr << "Variable " << sym->getName() << " already exists."
-                      << std::endl;
-            exit(1);
-        }
+        SymbolTable::getInstance()->insertGlobal(sym);
     }
 }

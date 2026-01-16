@@ -6,69 +6,8 @@
 class Visitor;
 #include <list>
 #include <string>
+#include "types.hh"
 // #include <memory>
-
-typedef enum nodeType
-{
-    PROGRAM_NODE,
-    COMPMOUNT_STATEMENT_NODE,
-    STATEMENT_LIST_NODE,
-    STATEMENT_NODE,
-    CONDITION_NODE,
-    IF_STATEMENT_NODE,
-    NUMBER_NODE,
-    EXPRESSION_NODE,
-    UNARY_PLUS_NODE,
-    UNARY_MINUS_NODE,
-    IDENTIFIER_NODE,
-    ASSIGNMENT_NODE,
-    MULTIPLICATION_NODE,
-    DIVISION_NODE,
-    ADDITION_NODE,
-    SUBTRACTION_NODE,
-    LESS_NODE,
-    LESS_EQUALS_NODE,
-    GREATER_NODE,
-    GREATER_EQUALS_NODE,
-    LOGIC_EQUALS_NODE,
-    LOGIC_AND_NODE,
-    LOGIC_OR_NODE,
-    LOGIC_NOT_NODE,
-    LOGIC_NOT_EQUALS_NODE,
-    PREFIX_INCREMENT_NODE,
-    PREFIX_DECREMENT_NODE,
-    POSTFIX_INCREMENT_NODE,
-    POSTFIX_DECREMENT_NODE,
-    TYPE_SPECIFIER_NODE,
-    VARIABLE_DECLARATION_NODE,
-    FUNCTION_CALL_NODE,
-    FUNCTION_DEFINITION_NODE,
-    PARAMETER_LIST_NODE,
-    ARGUMENT_LIST_NODE,
-    FUNCTION_DECLARATION_NODE,
-    EXTERNAL_DECLARATION_NODE,
-    TRANSLATION_UNIT_NODE,
-    RETURN_NODE,
-    VARIABLE_DECLARATION_LIST_NODE,
-    VARIABLE_DECLARATION_STATEMENT_NODE,
-    BIT_WISE_OR_NODE,
-    BIT_WISE_AND_NODE,
-    BIT_WISE_XOR_NODE,
-    BIT_WISE_NOT_NODE,
-    SHIFT_LEFT_NODE,
-    SHIFT_RIGHT_NODE,
-    PLUS_ASSIGNMENT_NODE,
-    MINUS_ASSIGNMENT_NODE,
-    MUL_ASSIGNMENT_NODE,
-    DIV_ASSIGNMENT_NODE,
-    MOD_ASSIGNMENT_NODE,
-    MOD_NODE,
-    WHILE_STATEMENT_NODE,
-    CONTINUE_NODE,
-    BREAK_NODE,
-    DO_WHILE_STATEMENT_NODE,
-    FOR_STATEMENT_NODE
-} nodeType;
 
 typedef int Value;
 // class Value
@@ -90,6 +29,7 @@ typedef int Value;
 class STNode
 {
   private:
+    dataType m_resolved_type;
     nodeType m_nodeType;
     std::string m_graphvizLabel;
     int m_serial;
@@ -112,12 +52,15 @@ class STNode
 
     nodeType getNodeType();
     STNode *getParent();
+    dataType getResolvedType();
+
     void setParent(STNode *parent);
+    void setResolvedType(dataType type);
+
     void printSyntaxTree(std::ofstream *dot);
     std::list<STNode *> &getChildrenList();
 
     virtual std::string getGraphvizLabel();
-    virtual int evaluate();
     virtual void accept(Visitor &v);
 };
 

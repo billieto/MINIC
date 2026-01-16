@@ -76,7 +76,6 @@ class EvaluatorVisitor : public Visitor
     void visitModAssignment(mod_assignment *node) override;
 
     // Statements & Control Flow
-    void visitCompoundStatement(compound_statement *node) override;
     void visitStatement(statement *node) override;
     void visitIfStatement(if_statement *node) override;
     void visitWhileStatement(while_statement *node) override;

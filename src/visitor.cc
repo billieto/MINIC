@@ -103,7 +103,17 @@ void Visitor::visitExternalDeclaration(external_declaration *node)
 // Statements & Control Flow
 void Visitor::visitCompoundStatement(compound_statement *node)
 {
+    if (node -> getParent()->getNodeType() != FUNCTION_DEFINITION_NODE)
+    {
+        SymbolTable::getInstance()->enterScope(SymbolTable::getInstance()->getCurrentId());
+    }
+
     visitChildren(node);
+
+    if (node -> getParent()->getNodeType() != FUNCTION_DEFINITION_NODE)
+    {
+        SymbolTable::getInstance()->exitScope();
+    }
 }
 void Visitor::visitStatementList(statement_list *node) { visitChildren(node); }
 void Visitor::visitStatement(statement *node) { visitChildren(node); }

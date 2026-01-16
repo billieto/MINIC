@@ -64,9 +64,9 @@ ID [a-zA-Z_][a-zA-Z0-9_]*
 ">>"    { return token::SHIFT_RIGHT; }
 
 "int"       { return token::INT_TYPE; }
-"double"    { return token::DOUBLE_TYPE; }
+ /* "double"    { return token::DOUBLE_TYPE; } */
 "float"     { return token::FLOAT_TYPE; }
-"char"      { return token::CHAR_TYPE; }
+ /* "char"      { return token::CHAR_TYPE; } */
 "void"      { return token::VOID_TYPE; }
 
 "return"    { return token::RETURN; }
@@ -76,15 +76,8 @@ ID [a-zA-Z_][a-zA-Z0-9_]*
 "do"        { return token::DO; }
 "for"       { return token::FOR; }
 
-
-
-[0-9]+("."[0-9]*)?([eE][-+]?[0-9]+)?[fF] {
-    yylval -> node = new NUMBER(std::stof(yytext));
-    return token::NUMBER;
-}
-
 [0-9]+"."[0-9]*([eE][-+]?[0-9]+)?|[0-9]+[eE][-+]?[0-9]+ {
-    yylval -> node = new NUMBER(std::stod(yytext));
+    yylval -> node = new NUMBER(std::stof(yytext));
     return token::NUMBER;
 }
 

@@ -16,18 +16,14 @@ class NUMBER : public STNode
 {
   private:
     Value m_value;
-    dataType m_value_type;
 
   public:
     NUMBER(int value);
     NUMBER(float value);
-    NUMBER(double value);
 
     std::string getGraphvizLabel() override;
     Value getValue();
-    dataType getValueType();
 
-    void setValueType(dataType type);
     void accept(Visitor &v) override;
 };
 

@@ -4,6 +4,7 @@
 
 #include "../lib/evaluator_visitor.hh"
 #include "../lib/declarator_visitor.hh"
+#include "../lib/type_checker_visitor.hh"
 #include "../lib/parser.tab.hh"
 // #include "../lib/lexer.hh"
 
@@ -33,25 +34,11 @@ int main(int argc, char *argv[])
     (*dot) << "}";
     dot->close();
     delete dot;
-
-    // Polymorphic way
-    // try
-    // {
-    //     g_root->evaluate();
-    // }
-    // catch (int mainReturn)
-    // {
-    //     if (!mainReturn)
-    //     {
-    //         std::cout << "Super!" << std::endl;
-    //     }
-    //     else
-    //     {
-    //         std::cout << "Not Super" << std::endl;
-    //     }
-    // }
-
+    
     // Visitor way
+    TypeCheckerVisitor tc;
+    g_root->accept(tc);
+
     DeclaratorVisitor decl;
     g_root->accept(decl);
 

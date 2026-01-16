@@ -20,6 +20,7 @@ SYMBOLTABLE_SRC = $(SRC_DIR)/symbol_table.cc
 VISITOR_SRC = $(SRC_DIR)/visitor.cc
 EVALUATORVISITOR_SRC = $(SRC_DIR)/evaluator_visitor.cc
 DECLARATORVISITOR_SRC = $(SRC_DIR)/declarator_visitor.cc
+TYPECHEKERVISITOR_SRC = $(SRC_DIR)/type_checker_visitor.cc
 
 # Header files
 CONCRETE_HH = $(LIB_DIR)/composite_concrete.hh
@@ -28,6 +29,7 @@ SYMBOLTABLE_HH = $(LIB_DIR)/symbol_table.hh
 VISITOR_HH = $(LIB_DIR)/visitor.hh
 EVALUATORVISITOR_HH = $(LIB_DIR)/evaluator_visitor.hh
 DECLARATORVISITOR_HH = $(LIB_DIR)/declarator_visitor.hh
+TYPECHECKERVISITOR_HH = $(LIB_DIR)/type_checker_visitor.hh
 
 # Generated files
 FLEX_CC = $(SRC_DIR)/lexer.yy.cc
@@ -38,7 +40,7 @@ VERBOSE = $(GRAMMAR_DIR)/parser.output
 
 # Object files
 OBJS = $(OBJ_DIR)/lexer.yy.o $(OBJ_DIR)/parser.tab.o $(OBJ_DIR)/main.o $(OBJ_DIR)/composite.o $(OBJ_DIR)/composite_concrete.o\
-$(OBJ_DIR)/symbol_table.o $(OBJ_DIR)/visitor.o $(OBJ_DIR)/evaluator_visitor.o $(OBJ_DIR)/declarator_visitor.o
+$(OBJ_DIR)/symbol_table.o $(OBJ_DIR)/visitor.o $(OBJ_DIR)/evaluator_visitor.o $(OBJ_DIR)/declarator_visitor.o $(OBJ_DIR)/type_checker_visitor.o
 
 # Output executable
 TARGET = parser
@@ -67,10 +69,10 @@ $(BISON_CC) $(BISON_HH): $(BISON_SRC) | $(SRC_DIR) $(LIB_DIR)
 	mv $(SRC_DIR)/parser.output $(VERBOSE)
 
 # Compile object files
-$(OBJ_DIR)/composite.o: $(COMPOSITE_HH) | $(OBJ_DIR)
+$(OBJ_DIR)/composite.o: $(COMPOSITE_HH) $(COMPOSITE_SRC) | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $(COMPOSITE_SRC) -o $@
 
-$(OBJ_DIR)/composite_concrete.o: $(COMPOSITE_HH) $(CONCRETE_HH) | $(OBJ_DIR)
+$(OBJ_DIR)/composite_concrete.o: $(COMPOSITE_HH) $(CONCRETE_HH) $(CONCRETE_SRC) | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $(CONCRETE_SRC) -o $@
 
 $(OBJ_DIR)/lexer.yy.o: $(FLEX_CC) $(FLEX_HH) $(BISON_HH) | $(OBJ_DIR)
@@ -79,17 +81,20 @@ $(OBJ_DIR)/lexer.yy.o: $(FLEX_CC) $(FLEX_HH) $(BISON_HH) | $(OBJ_DIR)
 $(OBJ_DIR)/parser.tab.o: $(BISON_CC) $(BISON_HH) | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $(BISON_CC) -o $@
 
-$(OBJ_DIR)/symbol_table.o: $(SYMBOLTABLE_HH) $(COMPOSITE_HH) | $(OBJ_DIR)
+$(OBJ_DIR)/symbol_table.o: $(SYMBOLTABLE_HH) $(COMPOSITE_HH) $(SYMBOLTABLE_SRC) | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $(SYMBOLTABLE_SRC) -o $@
 
-$(OBJ_DIR)/visitor.o: $(VISITOR_HH) $(COMPOSITE_HH) | $(OBJ_DIR)
+$(OBJ_DIR)/visitor.o: $(VISITOR_HH) $(COMPOSITE_HH) $(VISITOR_SRC) | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $(VISITOR_SRC) -o $@
 
-$(OBJ_DIR)/evaluator_visitor.o: $(EVALUATORVISITOR_HH) | $(OBJ_DIR)
+$(OBJ_DIR)/evaluator_visitor.o: $(EVALUATORVISITOR_HH) $(EVALUATORVISITOR_SRC) | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $(EVALUATORVISITOR_SRC) -o $@
 
-$(OBJ_DIR)/declarator_visitor.o: $(DECLARATORVISITOR_HH) | $(OBJ_DIR)
+$(OBJ_DIR)/declarator_visitor.o: $(DECLARATORVISITOR_HH) $(DECLARATORVISITOR_SRC) | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $(DECLARATORVISITOR_SRC) -o $@
+
+$(OBJ_DIR)/type_checker_visitor.o: $(TYPECHECKERVISITOR_HH) $(TYPECHEKERVISITOR_SRC) | $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -c $(TYPECHEKERVISITOR_SRC) -o $@
 
 $(OBJ_DIR)/main.o: $(MAIN_SRC) $(FLEX_HH) $(BISON_HH) | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $(MAIN_SRC) -o $@
