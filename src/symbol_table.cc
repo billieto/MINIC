@@ -4,7 +4,7 @@
 
 SymbolTable *SymbolTable::m_instance = nullptr;
 
-SymbolTable::SymbolTable() {}
+SymbolTable::SymbolTable() { enterScope(0); }
 
 SymbolTable::~SymbolTable()
 {
@@ -14,8 +14,7 @@ SymbolTable::~SymbolTable()
 
 void SymbolTable::enterScope(int id)
 {
-    ScopeFrame sf{id, {}};
-    scopeStack.push_back(sf);
+    scopeStack.push_back(std::make_unique<ScopeFrame>(id));
 }
 
 void SymbolTable::exitScope()
@@ -26,73 +25,65 @@ void SymbolTable::exitScope()
     }
 }
 
-int SymbolTable::getCurrentId() { return scopeStack.back().getId(); }
+int SymbolTable::getCurrentId() { return scopeStack.back()->getId(); }
 
 bool SymbolTable::insertGlobal(Symbol *sym)
 {
-    auto &globalMap = scopeStack.front();
-
-    if (globalMap.getTable().count(sym->getName()))
-    {
+    if (scopeStack.empty())
         return false;
-    }
 
-    globalMap.getTable()[sym->getName()] = sym;
+    auto &globalScopePtr = scopeStack.front();
 
-    return true;
+    return globalScopePtr->insert(sym);
 }
 
 bool SymbolTable::insert(Symbol *sym)
 {
-    auto &currentScope = scopeStack.back();
-
-    if (currentScope.getTable().count(sym->getName()))
+    if (scopeStack.empty())
     {
         return false;
     }
 
-    currentScope.getTable()[sym->getName()] = sym;
+    auto &currentScopePtr = scopeStack.back();
 
-    return true;
+    return currentScopePtr->insert(sym);
 }
 
 Symbol *SymbolTable::lookupGlobal(std::string name)
 {
-    auto &globalMap = scopeStack.front();
-
-    if (globalMap.getTable().count(name))
+    if (scopeStack.empty())
     {
-        return globalMap.getTable()[name];
+        return nullptr;
     }
 
-    return nullptr;
+    return scopeStack.front()->lookup(name);
 }
 
 Symbol *SymbolTable::lookup(std::string name)
 {
-    int current_id = scopeStack.back().getId();
+    if (scopeStack.empty())
+        return nullptr;
+
+    int current_id = scopeStack.back()->getId();
 
     for (int i = scopeStack.size() - 1; i >= 0; i--)
     {
-        ScopeFrame &temp_frame = scopeStack[i];
+        auto &temp_frame_ptr = scopeStack[i];
 
-        if (temp_frame.getId() != current_id)
+        if (temp_frame_ptr->getId() != current_id)
         {
             break;
         }
 
-        if (temp_frame.getTable().count(name))
+        Symbol *sym = temp_frame_ptr->lookup(name);
+        if (sym != nullptr)
         {
-            return temp_frame.getTable().at(name);
+            return sym;
         }
     }
 
-    if (scopeStack.begin()->getTable().count(name))
-    {
-        return scopeStack.begin()->getTable().at(name);
-    }
-
-    return nullptr;
+    // global loopup
+    return scopeStack.front()->lookup(name);
 }
 
 SymbolTable *SymbolTable::getInstance()
@@ -100,7 +91,6 @@ SymbolTable *SymbolTable::getInstance()
     if (m_instance == nullptr)
     {
         m_instance = new SymbolTable();
-        m_instance->enterScope(0);
     }
     return m_instance;
 }
@@ -144,10 +134,31 @@ void FuncSymbol::setParameters(std::vector<parameter> params)
     m_params = params;
 }
 
-ScopeFrame::ScopeFrame(int id, std::unordered_map<std::string, Symbol *> table)
+ScopeFrame::ScopeFrame(int id) { m_function_id = id; }
+
+bool ScopeFrame::insert(Symbol *sym)
 {
-    m_function_id = id;
-    m_table = table;
+    // Check if it exists
+    if (m_table.count(sym->getName()))
+    {
+        return false;
+    }
+
+    // TRANSFER OWNERSHIP:
+    // Wrap the raw pointer 'sym' into a unique_ptr and store it.
+    m_table[sym->getName()] = std::unique_ptr<Symbol>(sym);
+    return true;
+}
+
+Symbol *ScopeFrame::lookup(std::string name)
+{
+    if (m_table.count(name))
+    {
+        // .get() returns the raw pointer (observer) without transferring
+        // ownership
+        return m_table[name].get();
+    }
+    return nullptr;
 }
 
 VarSymbol::VarSymbol(Value value, std::string name, dataType type)
@@ -155,17 +166,17 @@ VarSymbol::VarSymbol(Value value, std::string name, dataType type)
 {
     m_value = value;
     m_value_type = type;
+    // m_ir_addr = this->getName();
 }
 
 Value VarSymbol::getValue() { return m_value; }
 
-dataType VarSymbol::getValueType() { return m_value_type;}
+dataType VarSymbol::getValueType() { return m_value_type; }
+
+std::string VarSymbol::getAddress() { return m_ir_addr; }
 
 void VarSymbol::setValue(Value value) { m_value = value; }
 
-int ScopeFrame::getId() { return m_function_id; }
+void VarSymbol::setAddress(std::string addr) { m_ir_addr = addr; }
 
-std::unordered_map<std::string, Symbol *> &ScopeFrame::getTable()
-{
-    return m_table;
-}
+int ScopeFrame::getId() { return m_function_id; }

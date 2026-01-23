@@ -3,9 +3,7 @@
 #define CONCRETE_
 
 #include "composite.hh"
-#include "symbol_table.hh"
 #include <string>
-#include <vector>
 
 class if_statement;
 class compound_statement;
@@ -15,14 +13,19 @@ class statement;
 class NUMBER : public STNode
 {
   private:
-    Value m_value;
+    union
+    {
+        int i_value;
+        float f_value;
+    };
 
   public:
     NUMBER(int value);
     NUMBER(float value);
 
     std::string getGraphvizLabel() override;
-    Value getValue();
+    int getIValue();
+    float getFValue();
 
     void accept(Visitor &v) override;
 };
@@ -320,31 +323,21 @@ class mod : public STNode
 
 class variable_declaration : public STNode
 {
-  private:
-    std::string m_name;
-    Value m_value;
-
   public:
     variable_declaration(IDENTIFIER *IDENTIFIER);
     variable_declaration(IDENTIFIER *IDENTIFIER, expression *expression);
 
-    std::string getName();
-    Value getValue();
-    void setName(std::string name);
-    void setValue(Value value);
     void accept(Visitor &v) override;
 };
 
 class variable_declaration_list : public STNode
 {
-  private:
-    std::vector<variable_declaration *> m_vars;
-
   public:
+    variable_declaration_list(
+        variable_declaration_list *variable_declaration_list,
+        variable_declaration *variable_declaration);
     variable_declaration_list(variable_declaration *variable_declaration);
 
-    std::vector<variable_declaration *> &getVariables();
-    void add(variable_declaration *variable_declaration);
     void accept(Visitor &v) override;
 };
 
@@ -429,6 +422,9 @@ class for_statement : public STNode
                   expression *expression3,
                   compound_statement *compound_statement);
 
+    for_statement(expression *expression1, expression *expression2,
+                  compound_statement *compound_statement);
+
     void accept(Visitor &v) override;
 };
 
@@ -450,28 +446,21 @@ class break_node : public STNode
 
 class argument_list : public STNode
 {
-  private:
-    std::vector<STNode *> arguments;
-
   public:
+    argument_list(argument_list *argument_list, expression *expression);
     argument_list(expression *expression);
 
-    void add(STNode *expression);
-    std::vector<STNode *> getArguments();
     void accept(Visitor &v) override;
 };
 
 class parameter_list : public STNode
 {
-  private:
-    std::vector<parameter> parameters;
-
   public:
+    parameter_list(parameter_list *parameter_list,
+                   type_specifier *type_specifier, IDENTIFIER *IDENTIFIER);
     parameter_list(type_specifier *type_specifier, IDENTIFIER *IDENTIFIER);
     parameter_list();
 
-    void add(dataType type, std::string name);
-    std::vector<parameter> &getParameters();
     void accept(Visitor &v) override;
 };
 

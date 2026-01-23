@@ -40,9 +40,9 @@
 %token CONTINUE BREAK WHILE DO FOR UNARY_MINUS UNARY_PLUS
 %token POSTFIX_INCREMENT POSTFIX_DECREMENT PREFIX_INCREMENT PREFIX_DECREMENT
 
-%type <node> expression condition program 
+%type <node> expression condition program non_empty_parameter_list
 %type <node> if_statement compound_statement statement_list statement
-%type <node> type_specifier argument_list parameter_list
+%type <node> type_specifier argument_list parameter_list expression_statement
 %type <node> function_definition function_declaration variable_declaration_statement
 %type <node> translation_unit external_declaration variable_declaration_list variable_declaration
 %type <node> while_statement do_while_statement for_statement
@@ -104,9 +104,7 @@ variable_declaration_list:
 	variable_declaration { $$ = new variable_declaration_list((variable_declaration *) $1); }
 |	variable_declaration_list COMMA variable_declaration
 	{
-		$$ = (variable_declaration_list *) $1;
-
-		((variable_declaration_list *) $$) -> add((variable_declaration *) $3);
+		$$ = new variable_declaration_list((variable_declaration_list *) $1, (variable_declaration *) $3);
 	}
 ;
 
@@ -121,7 +119,6 @@ function_definition:
 	{
 		$$ = new function_definition((type_specifier *) $1, (IDENTIFIER *) $2, (parameter_list *) $4, (compound_statement *) $6);
 	}
-	// type_specifier IDENTIFIER OPEN_PAREN argument_list CLOSE_PAREN compound_statement
 ;
 
 function_declaration:
@@ -133,24 +130,18 @@ function_declaration:
 
 parameter_list:
 	VOID_TYPE { $$ = new parameter_list(); }
-|	parameter_list COMMA type_specifier IDENTIFIER
-	{
-		$$ = (parameter_list *) $1;
-
-		((parameter_list *) $$) -> add(((type_specifier *) $3) -> getType(), ((IDENTIFIER *) $4) -> getLabel());
-	}
-|	type_specifier IDENTIFIER { $$ = new parameter_list((type_specifier *) $1, (IDENTIFIER *) $2); }
+|	non_empty_parameter_list { $$ = $1; }
 |	/* Empty */ { $$ = new parameter_list(); }
+;
+
+non_empty_parameter_list:
+	non_empty_parameter_list COMMA type_specifier IDENTIFIER { $$ = new parameter_list((parameter_list *) $1, (type_specifier *) $3, (IDENTIFIER *) $4); }
+|	type_specifier IDENTIFIER { $$ = new parameter_list((type_specifier *) $1, (IDENTIFIER *) $2); }
 ;
 
 // Arguments for function calls
 argument_list:
-	argument_list COMMA expression
-	{
-		$$ = (argument_list *) $1;
-
-		((argument_list *) $$) -> add($3);
-	}
+	argument_list COMMA expression { $$ = new argument_list((argument_list *) $1, (expression *) $3); }
 |	expression { $$ = new argument_list((expression *) $1); }
 ;
 
@@ -166,7 +157,7 @@ statement_list:
 ;
 
 statement:
-	expression SEMICOLON { $$ = $1; }
+	expression_statement { $$ = $1; }
 |	compound_statement { $$ = $1; }
 |	if_statement { $$ = $1; }
 |	variable_declaration_statement { $$ = $1; }
@@ -177,7 +168,6 @@ statement:
 |	RETURN SEMICOLON { $$ = new return_node(); }
 |	CONTINUE SEMICOLON { $$ = new continue_node(); }
 |	BREAK SEMICOLON { $$ = new break_node(); }
-|	SEMICOLON { $$ = new statement(); }
 // | switch_statement
 ;
 
@@ -198,9 +188,16 @@ do_while_statement:
 	DO compound_statement WHILE condition { $$ = new do_while_statement((compound_statement *) $2, (condition *) $4); }
 ;
 
-for_statement: // TODO: Need to make it so it can support Semicolon alone
-	FOR OPEN_PAREN expression SEMICOLON expression SEMICOLON expression CLOSE_PAREN compound_statement
-	{ $$ = new for_statement((expression *) $3, (expression *) $5, (expression *) $7, (compound_statement *) $9); }
+expression_statement:
+    expression SEMICOLON{ $$ = $1; }
+|   SEMICOLON { $$ = new statement(); }
+;
+
+for_statement:
+	FOR OPEN_PAREN expression_statement expression_statement expression CLOSE_PAREN compound_statement
+	{ $$ = new for_statement((expression *) $3, (expression *) $4, (expression *) $5, (compound_statement *) $7); }
+|	FOR OPEN_PAREN expression_statement expression_statement CLOSE_PAREN compound_statement
+	{ $$ = new for_statement((expression *) $3, (expression *) $4, (compound_statement *) $6); }
 ;
 
 expression:

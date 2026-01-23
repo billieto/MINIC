@@ -1,5 +1,6 @@
 #include "../lib/visitor.hh"
 #include "../lib/composite.hh"
+#include "../lib/symbol_table.hh"
 
 Visitor::Visitor() {}
 
@@ -103,14 +104,15 @@ void Visitor::visitExternalDeclaration(external_declaration *node)
 // Statements & Control Flow
 void Visitor::visitCompoundStatement(compound_statement *node)
 {
-    if (node -> getParent()->getNodeType() != FUNCTION_DEFINITION_NODE)
+    if (node->getParent()->getNodeType() != FUNCTION_DEFINITION_NODE)
     {
-        SymbolTable::getInstance()->enterScope(SymbolTable::getInstance()->getCurrentId());
+        SymbolTable::getInstance()->enterScope(
+            SymbolTable::getInstance()->getCurrentId());
     }
 
     visitChildren(node);
 
-    if (node -> getParent()->getNodeType() != FUNCTION_DEFINITION_NODE)
+    if (node->getParent()->getNodeType() != FUNCTION_DEFINITION_NODE)
     {
         SymbolTable::getInstance()->exitScope();
     }

@@ -2,19 +2,17 @@
 #include "../lib/composite.hh"
 #include "../lib/visitor.hh"
 #include <string>
-#include <sys/types.h>
-#include <vector>
 
 // Constructors
 NUMBER::NUMBER(int value) : STNode(NUMBER_NODE, {})
 {
-    m_value = value;
+    i_value = value;
     this->setResolvedType(T_INT);
 }
 
 NUMBER::NUMBER(float value) : STNode(NUMBER_NODE, {})
 {
-    m_value = value;
+    f_value = value;
     this->setResolvedType(T_FLOAT);
 }
 
@@ -191,10 +189,17 @@ mod::mod(expression *left, expression *right) : STNode(MOD_NODE, {left, right})
 }
 
 variable_declaration_list::variable_declaration_list(
+    variable_declaration_list *variable_declaration_list,
+    variable_declaration *variable_declaration)
+    : STNode(VARIABLE_DECLARATION_LIST_NODE,
+             {variable_declaration_list, variable_declaration})
+{
+}
+
+variable_declaration_list::variable_declaration_list(
     variable_declaration *variable_declaration)
     : STNode(VARIABLE_DECLARATION_LIST_NODE, {variable_declaration})
 {
-    m_vars.push_back(variable_declaration);
 }
 
 variable_declaration_statement::variable_declaration_statement(
@@ -231,10 +236,7 @@ statement::statement(compound_statement *compound_statement)
 {
 }
 
-statement::statement()
-    : STNode(STATEMENT_NODE, {})
-{
-}
+statement::statement() : STNode(STATEMENT_NODE, {}) {}
 
 statement_list::statement_list(statement_list *statement_list,
                                statement *statement)
@@ -291,6 +293,12 @@ for_statement::for_statement(expression *expression1, expression *expression2,
 {
 }
 
+for_statement::for_statement(expression *expression1, expression *expression2,
+                             compound_statement *compound_statement)
+    : STNode(FOR_STATEMENT_NODE, {expression1, expression2, compound_statement})
+{
+}
+
 continue_node::continue_node() : STNode(CONTINUE_NODE, {}) {}
 
 break_node::break_node() : STNode(BREAK_NODE, {}) {}
@@ -329,17 +337,28 @@ function_declaration::function_declaration(type_specifier *type_specifier,
 {
 }
 
+argument_list::argument_list(argument_list *argument_list,
+                             expression *expression)
+    : STNode(ARGUMENT_LIST_NODE, {argument_list, expression})
+{
+}
+
 argument_list::argument_list(expression *expression)
     : STNode(ARGUMENT_LIST_NODE, {expression})
 {
-    add(expression);
+}
+
+parameter_list::parameter_list(parameter_list *parameter_list,
+                               type_specifier *type_specifier,
+                               IDENTIFIER *IDENTIFIER)
+    : STNode(PARAMETER_LIST_NODE, {parameter_list, type_specifier, IDENTIFIER})
+{
 }
 
 parameter_list::parameter_list(type_specifier *type_specifier,
                                IDENTIFIER *IDENTIFIER)
     : STNode(PARAMETER_LIST_NODE, {type_specifier, IDENTIFIER})
 {
-    this->add(type_specifier->getType(), IDENTIFIER->getLabel());
 }
 
 parameter_list::parameter_list() : STNode(PARAMETER_LIST_NODE, {}) {}
@@ -388,7 +407,16 @@ program::program(translation_unit *translation_unit)
 // Graph Viz Labels
 std::string NUMBER::getGraphvizLabel()
 {
-    return STNode::getGraphvizLabel() + "=" + std::to_string(m_value);
+    if (this->getResolvedType() == T_FLOAT)
+    {
+        return STNode::getGraphvizLabel() + "=" + std::to_string(f_value);
+    }
+    else if (this->getResolvedType() == T_INT)
+    {
+        return STNode::getGraphvizLabel() + "=" + std::to_string(i_value);
+    }
+
+    return "";
 }
 
 std::string IDENTIFIER::getGraphvizLabel()
@@ -398,33 +426,9 @@ std::string IDENTIFIER::getGraphvizLabel()
 
 // Getters
 std::string IDENTIFIER::getLabel() { return m_label; }
-Value NUMBER::getValue() { return m_value; }
-std::vector<variable_declaration *> &variable_declaration_list::getVariables()
-{
-    return m_vars;
-}
-std::string variable_declaration::getName() { return m_name; }
-Value variable_declaration::getValue() { return m_value; }
+int NUMBER::getIValue() { return i_value; }
+float NUMBER::getFValue() { return f_value; }
 dataType type_specifier::getType() { return m_type; }
-std::vector<parameter> &parameter_list::getParameters() { return parameters; }
-std::vector<STNode *> argument_list::getArguments() { return arguments; }
-
-// Setters
-void variable_declaration::setName(std::string name) { m_name = name; }
-void variable_declaration::setValue(Value value) { m_value = value; }
-
-// Helper Methods
-void variable_declaration_list::add(variable_declaration *variable_declaration)
-{
-    m_vars.push_back(variable_declaration);
-}
-
-void argument_list::add(STNode *expression) { arguments.push_back(expression); }
-
-void parameter_list::add(dataType type, std::string name)
-{
-    parameters.push_back({type, name});
-}
 
 // Accepts for visitor
 // --- Leaf Nodes ---

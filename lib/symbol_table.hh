@@ -4,9 +4,12 @@
 
 #include "composite.hh"
 #include "types.hh"
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+typedef int Value;
 
 struct parameter
 {
@@ -31,7 +34,7 @@ class Symbol
 
   public:
     Symbol(std::string name, SymbolType type);
-    virtual ~Symbol() = default; // FIXME: Need to check if i have memory leak
+    virtual ~Symbol() = default;
 
     SymbolType getType();
     std::string getName();
@@ -66,27 +69,31 @@ class VarSymbol : public Symbol
   private:
     Value m_value;
     dataType m_value_type;
+    std::string m_ir_addr;
 
   public:
     VarSymbol(Value value, std::string name, dataType type);
 
     Value getValue();
     dataType getValueType();
+    std::string getAddress();
 
     void setValue(Value value);
+    void setAddress(std::string addr);
 };
 
 class ScopeFrame
 {
   private:
     int m_function_id;
-    std::unordered_map<std::string, Symbol *> m_table;
+    std::unordered_map<std::string, std::unique_ptr<Symbol>> m_table;
 
   public:
-    ScopeFrame(int id, std::unordered_map<std::string, Symbol *> table);
+    ScopeFrame(int id);
 
     int getId();
-    std::unordered_map<std::string, Symbol *> &getTable();
+    bool insert(Symbol *sym);
+    Symbol *lookup(std::string name);
 };
 
 class SymbolTable
@@ -95,7 +102,7 @@ class SymbolTable
     SymbolTable();
 
     static SymbolTable *m_instance;
-    std::vector<ScopeFrame> scopeStack;
+    std::vector<std::unique_ptr<ScopeFrame>> scopeStack;
 
   public:
     ~SymbolTable();

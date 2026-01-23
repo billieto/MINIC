@@ -15,7 +15,15 @@ void EvaluatorVisitor::visitIDENTIFIER(IDENTIFIER *node)
 
 void EvaluatorVisitor::visitNUMBER(NUMBER *node)
 {
-    m_result = node->getValue();
+    if (node->getResolvedType() == T_INT)
+    {
+        m_result = node->getIValue();
+    }
+    else if (node->getResolvedType() == T_FLOAT)
+    {
+        m_result = (int)node->getFValue();
+    }
+    // This is temp solution.
 }
 
 void EvaluatorVisitor::visitUnaryPlus(unary_plus *node)
@@ -420,14 +428,28 @@ void EvaluatorVisitor::visitVariableDeclaration(variable_declaration *node)
     auto &temp = node->getChildrenList();
     auto it = temp.begin();
 
-    node->setName(static_cast<IDENTIFIER *>(*it)->getLabel());
-    it++;
-
     if (temp.size() > 1)
     {
+        it++;
         (*it)->accept(*this);
+    }
+}
 
-        node->setValue(m_result);
+void EvaluatorVisitor::visitVariableDeclarationList(
+    variable_declaration_list *node)
+{
+    auto &temp = node->getChildrenList();
+    auto it = temp.begin();
+
+    if (temp.size() == 2)
+    {
+        (*it)->accept(*this);
+        it++;
+        m_vars.push_back((*it));
+    }
+    else
+    {
+        m_vars.push_back((*it));
     }
 }
 
@@ -439,10 +461,8 @@ void EvaluatorVisitor::visitVariableDeclarationStatement(
     dataType currentType = static_cast<type_specifier *>(*it)->getType();
 
     it++;
-    std::vector<variable_declaration *> varList =
-        static_cast<variable_declaration_list *>(*it)->getVariables();
-
-    for (auto var : varList)
+    (*it)->accept(*this);
+    for (auto &var : m_vars)
     {
         var->accept(*this);
 
@@ -455,6 +475,8 @@ void EvaluatorVisitor::visitVariableDeclarationStatement(
 
         SymbolTable::getInstance()->insert(sym);
     }
+
+    m_vars.clear();
 }
 
 void EvaluatorVisitor::visitStatement(statement *node)
@@ -553,8 +575,12 @@ void EvaluatorVisitor::visitForStatement(for_statement *node)
     STNode *cond = (*it); // second part
     it++;
 
-    STNode *inc = (*it); // third part
-    it++;
+    STNode *inc = nullptr;
+    if (node->getChildrenList().size() == 4)
+    {
+        inc = (*it); // third part
+        it++;
+    }
 
     cond->accept(*this);
     while (m_result)
@@ -572,7 +598,11 @@ void EvaluatorVisitor::visitForStatement(for_statement *node)
             break;
         }
 
-        inc->accept(*this);
+        if (inc != nullptr)
+        {
+            inc->accept(*this);
+        }
+
         cond->accept(*this);
     }
 }
@@ -582,10 +612,7 @@ void EvaluatorVisitor::visitContinue(continue_node *node)
     throw continue_signal();
 }
 
-void EvaluatorVisitor::visitBreak(break_node *node)
-{
-    throw break_signal();
-}
+void EvaluatorVisitor::visitBreak(break_node *node) { throw break_signal(); }
 
 void EvaluatorVisitor::visitReturn(return_node *node)
 {
@@ -597,6 +624,26 @@ void EvaluatorVisitor::visitReturn(return_node *node)
     {
         node->getChildrenList().front()->accept(*this);
         throw m_result;
+    }
+}
+
+void EvaluatorVisitor::visitArgumentList(argument_list *node)
+{
+    auto childs = node->getChildrenList();
+
+    if (childs.size() == 2)
+    {
+        auto it = childs.begin();
+        (*it)->accept(*this);
+
+        // add expression to vector.
+        it++;
+        m_args.push_back(static_cast<expression *>(*it));
+    }
+    else
+    {
+        // add expression to vector.
+        m_args.push_back(node->getChildrenList().front());
     }
 }
 
@@ -623,13 +670,15 @@ void EvaluatorVisitor::visitFunctionCall(function_call *node)
     else // With arguments
     {
         it++;
-        auto expressions = static_cast<argument_list *>(*it)->getArguments();
+        (*it)->accept(*this);
 
-        for (auto expr : expressions)
+        for (auto &expr : m_args)
         {
             expr->accept(*this);
             finalValues.push_back(m_result);
         }
+
+        m_args.clear();
     }
 
     // Calculating the arguments of the function call
@@ -684,7 +733,8 @@ void EvaluatorVisitor::visitProgram(program *node)
         exit(1);
     }
 
-    SymbolTable::getInstance()->enterScope(SymbolTable::getInstance()->getCurrentId() + 1);
+    SymbolTable::getInstance()->enterScope(
+        SymbolTable::getInstance()->getCurrentId() + 1);
     try
     {
         entry->getFunctionBody()->accept(*this);

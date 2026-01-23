@@ -2,12 +2,17 @@
 #ifndef TYPECHECKER_
 #define TYPECHECKER_
 
+#include "composite.hh"
 #include "composite_concrete.hh"
+#include "symbol_table.hh"
 #include "visitor.hh"
+#include <vector>
 
 class TypeCheckerVisitor : public Visitor
 {
   private:
+    unsigned int m_loop_depth;
+
     // The basic field for visitor pattern to work
     dataType m_last_type;
 
@@ -15,11 +20,17 @@ class TypeCheckerVisitor : public Visitor
     dataType m_expected_return_type;
     bool m_found_return;
 
+    // Helper lists/vectors for parameters, arguments and variables
+    std::vector<parameter> m_params;
+    std::vector<STNode *> m_args;
+    std::vector<STNode *> m_vars;
+
     // Helper methods
     void semanticError(std::string s);
     std::string typeToString(dataType type);
     dataType checkMathTypes(dataType left, dataType right, std::string op);
     bool isCompatible(dataType target, dataType source);
+
   public:
     TypeCheckerVisitor();
     virtual ~TypeCheckerVisitor() = default;
@@ -35,6 +46,9 @@ class TypeCheckerVisitor : public Visitor
     void visitFunctionDeclaration(function_declaration *node) override;
     void visitFunctionDefinition(function_definition *node) override;
     void visitFunctionCall(function_call *node) override;
+    void visitParameterList(parameter_list *node) override;
+    void visitArgumentList(argument_list *node) override;
+    void visitVariableDeclarationList(variable_declaration_list *node) override;
 
     // 3. Statements & Control Flow
     void visitReturn(return_node *node) override;
@@ -42,6 +56,9 @@ class TypeCheckerVisitor : public Visitor
     void visitWhileStatement(while_statement *node) override;
     void visitDoWhileStatement(do_while_statement *node) override;
     void visitForStatement(for_statement *node) override;
+    void visitCondition(condition *node) override;
+    void visitContinue(continue_node *node) override;
+    void visitBreak(break_node *node) override;
 
     // 4. Assignments (LHS = RHS)
     void visitAssignment(assignment *node) override;

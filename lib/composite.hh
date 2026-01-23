@@ -2,29 +2,11 @@
 #ifndef COMPOSITE_
 #define COMPOSITE_
 
-// #include "visitor.hh"
-class Visitor;
+#include "types.hh"
 #include <list>
 #include <string>
-#include "types.hh"
-// #include <memory>
 
-typedef int Value;
-// class Value
-// {
-// private:
-//     dataType m_type;
-//     union
-//     {
-//         int i;
-//         float f;
-//         double d;
-//         char c;
-//     } m_value
-//     ;
-// public:
-//     Value();
-// };
+class Visitor;
 
 class STNode
 {
@@ -32,9 +14,8 @@ class STNode
     dataType m_resolved_type;
     nodeType m_nodeType;
     std::string m_graphvizLabel;
-    int m_serial;
+    unsigned int m_serial;
     static int m_serialCounter;
-    // std::list<std::unique_ptr<STNode>> m_children;
     std::list<STNode *> m_children;
     STNode *m_parent;
 

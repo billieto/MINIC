@@ -7,6 +7,7 @@ TypeCheckerVisitor::TypeCheckerVisitor()
     m_last_type = T_VOID;
     m_expected_return_type = T_VOID;
     m_found_return = false;
+    m_loop_depth = 0;
 }
 
 void TypeCheckerVisitor::visitIDENTIFIER(IDENTIFIER *node)
@@ -16,7 +17,7 @@ void TypeCheckerVisitor::visitIDENTIFIER(IDENTIFIER *node)
 
     if (!sym)
     {
-        semanticError("Identifier" + sym->getName() + "not defined in scope");
+        semanticError("Identifier" + node->getLabel() + "not defined in scope");
     }
 
     m_last_type = sym->getValueType();
@@ -598,6 +599,75 @@ void TypeCheckerVisitor::visitAssignment(assignment *node)
     node->setResolvedType(lhsType);
 }
 
+void TypeCheckerVisitor::visitParameterList(parameter_list *node)
+{
+    auto childs = node->getChildrenList();
+    dataType type = T_VOID;
+
+    if (childs.size() == 3)
+    {
+        auto it = childs.begin();
+        (*it)->accept(*this);
+
+        // add type specifier and id to a vector.
+        it++;
+        type = static_cast<type_specifier *>(*it)->getType();
+        if (type == T_VOID)
+        {
+            semanticError("You cant put a void type parameter");
+        }
+        it++;
+        std::string id = static_cast<IDENTIFIER *>(*it)->getLabel();
+
+        parameter param = {type, id};
+        m_params.push_back(param);
+    }
+    else if (childs.size() == 2)
+    {
+        // add type specifier and id to a vector.
+        auto it = childs.begin();
+        type = static_cast<type_specifier *>(*it)->getType();
+        if (type == T_VOID)
+        {
+            semanticError("You cant put a void type parameter");
+        }
+        it++;
+        std::string id = static_cast<IDENTIFIER *>(*it)->getLabel();
+
+        parameter param = {type, id};
+        m_params.push_back(param);
+    }
+    else
+    {
+        // Empty list
+    }
+
+    node->setResolvedType(type);
+    m_last_type = type;
+}
+
+void TypeCheckerVisitor::visitArgumentList(argument_list *node)
+{
+    auto childs = node->getChildrenList();
+
+    if (childs.size() == 2)
+    {
+        auto it = childs.begin();
+        (*it)->accept(*this);
+
+        // add expression to vector.
+        it++;
+        m_args.push_back(static_cast<expression *>(*it));
+    }
+    else
+    {
+        // add expression to vector.
+        m_args.push_back(node->getChildrenList().front());
+    }
+
+    // node->setResolvedType(m_last_type);
+}
+
 void TypeCheckerVisitor::visitFunctionCall(function_call *node)
 {
     std::vector<dataType> final_types;
@@ -620,13 +690,14 @@ void TypeCheckerVisitor::visitFunctionCall(function_call *node)
     else // With arguments
     {
         it++;
-        auto expressions = static_cast<argument_list *>(*it)->getArguments();
-
-        for (auto expr : expressions)
+        (*it)->accept(*this);
+        for (auto &expr : m_args)
         {
             expr->accept(*this);
             final_types.push_back(m_last_type);
         }
+
+        m_args.clear();
     }
 
     std::vector<parameter> &func_params = def->getParameters();
@@ -645,8 +716,7 @@ void TypeCheckerVisitor::visitFunctionCall(function_call *node)
                           "not matching the function parameters declared");
         }
     }
-    // FIXME: In what i will emit, i need to see what conversions it allows and
-    // change the typechecker how its need to be changed
+
     m_last_type = def->getReturnType();
     node->setResolvedType(m_last_type);
 }
@@ -659,15 +729,16 @@ void TypeCheckerVisitor::visitFunctionDeclaration(function_declaration *node)
     it++;
     std::string id = static_cast<IDENTIFIER *>(*it)->getLabel();
     it++;
-    std::vector<parameter> &params =
-        static_cast<parameter_list *>(*it)->getParameters();
+    (*it)->accept(*this);
 
-    FuncSymbol *sym = new FuncSymbol(return_type, nullptr, params, id);
+    FuncSymbol *sym = new FuncSymbol(return_type, nullptr, m_params, id);
 
     if (!SymbolTable::getInstance()->insert(sym))
     {
         semanticError("Function already declared");
     }
+
+    m_params.clear();
 }
 
 void TypeCheckerVisitor::visitFunctionDefinition(function_definition *node)
@@ -678,8 +749,9 @@ void TypeCheckerVisitor::visitFunctionDefinition(function_definition *node)
     it++;
     std::string id = static_cast<IDENTIFIER *>(*it)->getLabel();
     it++;
-    std::vector<parameter> &params =
-        static_cast<parameter_list *>(*it)->getParameters();
+    // std::vector<parameter> &params =
+    // static_cast<parameter_list *>(*it)->getParameters();
+    (*it)->accept(*this);
     it++;
     compound_statement *body = static_cast<compound_statement *>(*it);
 
@@ -689,7 +761,7 @@ void TypeCheckerVisitor::visitFunctionDefinition(function_definition *node)
     if (existing)
     {
         if (existing->getReturnType() != return_type ||
-            existing->getParameters() != params)
+            existing->getParameters() != m_params)
         {
             semanticError("Conflicting types for function " + id);
         }
@@ -702,7 +774,7 @@ void TypeCheckerVisitor::visitFunctionDefinition(function_definition *node)
     }
     else
     {
-        FuncSymbol *sym = new FuncSymbol(return_type, body, params, id);
+        FuncSymbol *sym = new FuncSymbol(return_type, body, m_params, id);
         if (!SymbolTable::getInstance()->insertGlobal(sym))
         {
             semanticError("Function " + id + " already defined");
@@ -715,12 +787,13 @@ void TypeCheckerVisitor::visitFunctionDefinition(function_definition *node)
     SymbolTable::getInstance()->enterScope(
         SymbolTable::getInstance()->getCurrentId() + 1);
 
-    for (auto &param : params)
+    for (auto &param : m_params)
     {
         VarSymbol *sym = new VarSymbol(0, param.name, param.type);
         SymbolTable::getInstance()->insert(sym);
     }
 
+    m_params.clear();
     body->accept(*this);
 
     SymbolTable::getInstance()->exitScope();
@@ -738,7 +811,6 @@ void TypeCheckerVisitor::visitVariableDeclaration(variable_declaration *node)
     auto &temp = node->getChildrenList();
     auto it = temp.begin();
 
-    node->setName(static_cast<IDENTIFIER *>(*it)->getLabel());
     it++;
 
     if (temp.size() > 1)
@@ -753,6 +825,24 @@ void TypeCheckerVisitor::visitVariableDeclaration(variable_declaration *node)
     node->setResolvedType(m_last_type);
 }
 
+void TypeCheckerVisitor::visitVariableDeclarationList(
+    variable_declaration_list *node)
+{
+    auto &temp = node->getChildrenList();
+    auto it = temp.begin();
+
+    if (temp.size() == 2)
+    {
+        (*it)->accept(*this);
+        it++;
+        m_vars.push_back((*it));
+    }
+    else
+    {
+        m_vars.push_back((*it));
+    }
+}
+
 void TypeCheckerVisitor::visitVariableDeclarationStatement(
     variable_declaration_statement *node)
 {
@@ -761,10 +851,9 @@ void TypeCheckerVisitor::visitVariableDeclarationStatement(
     dataType current_type = static_cast<type_specifier *>(*it)->getType();
 
     it++;
-    auto var_list =
-        static_cast<variable_declaration_list *>(*it)->getVariables();
+    (*it)->accept(*this);
 
-    for (auto var : var_list)
+    for (auto &var : m_vars)
     {
         var->accept(*this);
 
@@ -788,6 +877,9 @@ void TypeCheckerVisitor::visitVariableDeclarationStatement(
             semanticError("Variable " + sym->getName() + " already exists.");
         }
     }
+
+    m_vars.clear();
+    node->setResolvedType(current_type);
 }
 
 void TypeCheckerVisitor::visitReturn(return_node *node)
@@ -853,9 +945,11 @@ void TypeCheckerVisitor::visitWhileStatement(while_statement *node)
         semanticError("While statement condition should not be void type");
     }
 
-    it++;
     // Loop body
+    it++;
+    m_loop_depth++;
     (*it)->accept(*this);
+    m_loop_depth--;
 
     m_last_type = T_VOID;
     node->setResolvedType(T_VOID);
@@ -872,9 +966,11 @@ void TypeCheckerVisitor::visitDoWhileStatement(do_while_statement *node)
         semanticError("While statement condition should not be void type");
     }
 
-    it++;
     // Loop body
+    it++;
+    m_loop_depth++;
     (*it)->accept(*this);
+    m_loop_depth--;
 
     m_last_type = T_VOID;
     node->setResolvedType(T_VOID);
@@ -887,24 +983,63 @@ void TypeCheckerVisitor::visitForStatement(for_statement *node)
     // Initialization
     (*it)->accept(*this);
 
-    it++;
     // Condition
+    it++;
     (*it)->accept(*this);
-    if (m_last_type == T_VOID)
+    if (m_last_type == T_VOID && (*it)->getNodeType() != STATEMENT_NODE)
     {
         semanticError("For statement condition should not be void type");
     }
 
-    it++;
-    // Increment
-    (*it)->accept(*this);
+    if (node->getChildrenList().size() == 3)
+    {
+        // Loop body
+        it++;
+        m_loop_depth++;
+        (*it)->accept(*this);
+        m_loop_depth--;
+    }
+    else
+    {
+        // Increment
+        it++;
+        (*it)->accept(*this);
 
-    it++;
-    // Loop body
-    (*it)->accept(*this);
+        // Loop body
+        it++;
+        m_loop_depth++;
+        (*it)->accept(*this);
+        m_loop_depth--;
+    }
 
     m_last_type = T_VOID;
     node->setResolvedType(T_VOID);
+}
+
+void TypeCheckerVisitor::visitContinue(continue_node *node)
+{
+    if (m_loop_depth == 0)
+    {
+        semanticError(
+            "Semantic Error: 'continue' statement used outside of a loop.");
+        exit(1);
+    }
+}
+
+void TypeCheckerVisitor::visitBreak(break_node *node)
+{
+    if (m_loop_depth == 0)
+    {
+        semanticError(
+            "Semantic Error: 'break' statement used outside of a loop.");
+        exit(1);
+    }
+}
+
+void TypeCheckerVisitor::visitCondition(condition *node)
+{
+    (*node->getChildrenList().begin())->accept(*this);
+    node->setResolvedType(m_last_type);
 }
 
 void TypeCheckerVisitor::semanticError(std::string s)
@@ -926,6 +1061,8 @@ std::string TypeCheckerVisitor::typeToString(dataType type)
     case T_FLOAT:
         return "float";
     }
+
+    return "";
 }
 
 dataType TypeCheckerVisitor::checkMathTypes(dataType left, dataType right,

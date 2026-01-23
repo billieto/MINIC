@@ -1,5 +1,8 @@
 #pragma once
+#include "composite.hh"
 #include "composite_concrete.hh"
+#include "symbol_table.hh"
+#include <vector>
 #ifndef _EVALUATOR
 #define _EVALUATOR
 
@@ -11,6 +14,9 @@ class EvaluatorVisitor : public Visitor
 {
   private:
     Value m_result = 0;
+
+    std::vector<STNode *> m_args;
+    std::vector<STNode *> m_vars;
 
     struct continue_signal
     {
@@ -82,9 +88,11 @@ class EvaluatorVisitor : public Visitor
     void visitDoWhileStatement(do_while_statement *node) override;
     void visitForStatement(for_statement *node) override;
     void visitCondition(condition *node) override;
+    void visitArgumentList(argument_list *node) override;
 
     // Declarations & Functions
     void visitVariableDeclaration(variable_declaration *node) override;
+    void visitVariableDeclarationList(variable_declaration_list *node) override;
     void visitVariableDeclarationStatement(
         variable_declaration_statement *node) override;
     void visitFunctionCall(function_call *node) override;
