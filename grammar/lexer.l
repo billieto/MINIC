@@ -8,7 +8,8 @@
 #include "symbol_table.hh"
 #include <string.h>
 
-#define YY_DECL int yylex(yy::parser::semantic_type *yylval)
+#define YY_DECL int yylex(yy::parser::value_type *yylval, yy::parser::location_type* loc)
+#define YY_USER_ACTION loc->columns(yyleng);
 
 typedef yy::parser::token token;
 %}
@@ -20,6 +21,9 @@ ID [a-zA-Z_][a-zA-Z0-9_]*
 
 %%
 
+%{
+loc->step();
+%}
 
 "="     { return token::EQUALS; }
 "+"     { return token::PLUS; }

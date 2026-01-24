@@ -5,13 +5,15 @@
 	#include "parser.tab.hh"
 	// #include "lexer.hh"
 
-	extern int yylex(yy::parser::semantic_type *yylval);
+	extern int yylex(yy::parser::value_type *yylval, yy::parser::location_type* loc);
 	extern STNode *g_root;
+	extern int yylineno;
 %}
 
 %define parse.error verbose
 %debug
 %verbose
+%locations
 
 %code requires
 {
@@ -23,6 +25,11 @@
 %union
 {
 	STNode *node;
+}
+
+%initial-action
+{
+@$.begin.filename = @$.end.filename = new std::string("test.txt");
 }
 
 %start program
@@ -250,8 +257,8 @@ type_specifier:
 
 %%
 
-void yy::parser::error(const std::string& message)
+void yy::parser::error(const location_type& loc, const std::string& msg)
 {
-    std::cerr << message << std::endl;
+	std::cerr << msg << " at "<< loc <<  std::endl;
 	exit(1);
 }

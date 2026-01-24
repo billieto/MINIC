@@ -34,6 +34,7 @@ DECLARATORVISITOR_HH = $(LIB_DIR)/declarator_visitor.hh
 TYPECHECKERVISITOR_HH = $(LIB_DIR)/type_checker_visitor.hh
 TYPES_HH = $(LIB_DIR)/types.hh
 IREMITTERVISITOR_HH = $(LIB_DIR)/ir_emitter_visitor.hh
+LOCATION_HH = $(LIB_DIR)/location.hh
 
 # Generated files
 FLEX_CC = $(SRC_DIR)/lexer.yy.cc
@@ -75,6 +76,7 @@ $(BISON_CC) $(BISON_HH): $(BISON_SRC) | $(SRC_DIR) $(LIB_DIR)
 	$(BISON) -d $(BISON_SRC) -o $(BISON_CC)
 	mv $(SRC_DIR)/parser.tab.hh $(BISON_HH)
 	mv $(SRC_DIR)/parser.output $(VERBOSE)
+	mv $(SRC_DIR)/location.hh $(LOCATION_HH)
 
 # Compile object files
 $(OBJ_DIR)/composite.o: $(COMPOSITE_HH) $(COMPOSITE_SRC) $(VISITOR_HH) $(VISITOR_SRC) | $(OBJ_DIR)
