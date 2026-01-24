@@ -1,6 +1,7 @@
 #include "../lib/type_checker_visitor.hh"
 #include <cstddef>
 #include <iostream>
+#include <string>
 
 TypeCheckerVisitor::TypeCheckerVisitor()
 {
@@ -10,6 +11,96 @@ TypeCheckerVisitor::TypeCheckerVisitor()
     m_loop_depth = 0;
 }
 
+// --- Helper methods ---
+void TypeCheckerVisitor::semanticError(std::string s)
+{
+    std::cerr << "Semantic Error: " + s << std::endl;
+    exit(1);
+}
+
+std::string TypeCheckerVisitor::typeToString(dataType type)
+{
+    switch (type)
+    {
+    case T_VOID:
+        return "void";
+
+    case T_INT:
+        return "int";
+
+    case T_FLOAT:
+        return "float";
+    }
+
+    return "";
+}
+
+dataType TypeCheckerVisitor::checkMathTypes(dataType left, dataType right,
+                                            std::string op)
+{
+
+    if (left == T_FLOAT || right == T_FLOAT)
+    {
+        return T_FLOAT;
+    }
+    else if (left == T_INT && right == T_INT)
+    {
+        return T_INT;
+    }
+
+    semanticError("Type Mismatch: Cannot perform '" + op + "' on " +
+                  typeToString(left) + " and " + typeToString(right));
+    return T_VOID;
+}
+
+dataType TypeCheckerVisitor::checkLogicalTypes(dataType left, dataType right,
+                                               std::string op)
+{
+    if (left == T_VOID || right == T_VOID)
+    {
+        semanticError("Type Error: Logical operator '" + op +
+                      "' cannot operate on void operands.");
+    }
+
+    // 2. Warning for Floats (Optional but good practice)
+    // While C allows (5.5 && 1.0), it is often a bug.
+    // if (left == T_FLOAT || right == T_FLOAT) { ... warn ... }
+    return T_INT;
+}
+
+dataType TypeCheckerVisitor::checkBitwiseTypes(dataType left, dataType right,
+                                               std::string op)
+{
+    if (left != T_INT || right != T_INT)
+    {
+        semanticError("Type Error: Bitwise operator '" + op +
+                      "' requires integer operands. Got " + typeToString(left) +
+                      " and " + typeToString(right));
+    }
+
+    return T_INT;
+}
+
+bool TypeCheckerVisitor::isCompatible(dataType target, dataType source)
+{
+
+    if (target == source)
+    {
+        return true;
+    }
+    if (target == T_FLOAT && source == T_INT)
+    {
+        return true; // Upgrade
+    }
+    if (target == T_INT && source == T_FLOAT)
+    {
+        return true; // Truncation (C allows this)
+    }
+
+    return false;
+}
+
+// --- Visitors ---
 void TypeCheckerVisitor::visitIDENTIFIER(IDENTIFIER *node)
 {
     VarSymbol *sym = dynamic_cast<VarSymbol *>(
@@ -37,7 +128,7 @@ void TypeCheckerVisitor::visitAddition(addition *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    m_last_type = checkMathTypes(leftType, rightType, "Addition");
+    m_last_type = checkMathTypes(leftType, rightType, "Addition (+)");
     node->setResolvedType(m_last_type);
 }
 
@@ -49,7 +140,7 @@ void TypeCheckerVisitor::visitSubtraction(subtraction *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    m_last_type = checkMathTypes(leftType, rightType, "Subtraction");
+    m_last_type = checkMathTypes(leftType, rightType, "Subtraction (-)");
     node->setResolvedType(m_last_type);
 }
 
@@ -61,7 +152,7 @@ void TypeCheckerVisitor::visitMultiplication(multiplication *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    m_last_type = checkMathTypes(leftType, rightType, "Multiplication");
+    m_last_type = checkMathTypes(leftType, rightType, "Multiplication (*)");
     node->setResolvedType(m_last_type);
 }
 
@@ -73,7 +164,7 @@ void TypeCheckerVisitor::visitDivision(division *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    m_last_type = checkMathTypes(leftType, rightType, "Division");
+    m_last_type = checkMathTypes(leftType, rightType, "Division (/)");
     node->setResolvedType(m_last_type);
 }
 
@@ -86,15 +177,13 @@ void TypeCheckerVisitor::visitMod(mod *node)
     dataType rightType = m_last_type;
 
     // Modulo usually ONLY works on Integers in C-like languages
-    if (leftType == T_INT && rightType == T_INT)
-    {
-        m_last_type = T_INT;
-    }
-    else
+    if (leftType != T_INT || rightType != T_INT)
     {
         semanticError("Modulo operator (%) requires Integer operands.");
     }
-    node->setResolvedType(m_last_type);
+
+    m_last_type = T_INT;
+    node->setResolvedType(T_INT);
 }
 
 void TypeCheckerVisitor::visitLess(less *node)
@@ -105,11 +194,11 @@ void TypeCheckerVisitor::visitLess(less *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    checkMathTypes(leftType, rightType, "Less Than");
+    checkMathTypes(leftType, rightType, "Less Than (<)");
 
     // RESULT IS ALWAYS INT (True/False)
     m_last_type = T_INT;
-    node->setResolvedType(m_last_type);
+    node->setResolvedType(T_INT);
 }
 
 void TypeCheckerVisitor::visitLessEquals(less_equals *node)
@@ -120,9 +209,8 @@ void TypeCheckerVisitor::visitLessEquals(less_equals *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    checkMathTypes(leftType, rightType, "Less Equals");
-    m_last_type = T_INT;
-    node->setResolvedType(m_last_type);
+    m_last_type = checkLogicalTypes(leftType, rightType, "Less Equals (<=)");
+    node->setResolvedType(T_INT);
 }
 
 void TypeCheckerVisitor::visitGreater(greater *node)
@@ -133,9 +221,8 @@ void TypeCheckerVisitor::visitGreater(greater *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    checkMathTypes(leftType, rightType, "Greater Than");
-    m_last_type = T_INT;
-    node->setResolvedType(m_last_type);
+    m_last_type = checkLogicalTypes(leftType, rightType, "Greater Than (>)");
+    node->setResolvedType(T_INT);
 }
 
 void TypeCheckerVisitor::visitGreaterEquals(greater_equals *node)
@@ -146,9 +233,8 @@ void TypeCheckerVisitor::visitGreaterEquals(greater_equals *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    checkMathTypes(leftType, rightType, "Greater Equals");
-    m_last_type = T_INT;
-    node->setResolvedType(m_last_type);
+    m_last_type = checkLogicalTypes(leftType, rightType, "Greater Equals (>=)");
+    node->setResolvedType(T_INT);
 }
 
 void TypeCheckerVisitor::visitLogicEquals(logic_equals *node)
@@ -159,13 +245,8 @@ void TypeCheckerVisitor::visitLogicEquals(logic_equals *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    if (leftType == T_VOID || rightType == T_VOID)
-    {
-        semanticError("Cannot compare VOID types.");
-    }
-
-    m_last_type = T_INT;
-    node->setResolvedType(m_last_type);
+    m_last_type = checkLogicalTypes(leftType, rightType, "Equals (==)");
+    node->setResolvedType(T_INT);
 }
 
 void TypeCheckerVisitor::visitLogicNotEquals(logic_not_equals *node)
@@ -176,13 +257,8 @@ void TypeCheckerVisitor::visitLogicNotEquals(logic_not_equals *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    if (leftType == T_VOID || rightType == T_VOID)
-    {
-        semanticError("Cannot compare VOID types.");
-    }
-
-    m_last_type = T_INT;
-    node->setResolvedType(m_last_type);
+    m_last_type = checkLogicalTypes(leftType, rightType, "Not Equals (!=)");
+    node->setResolvedType(T_INT);
 }
 
 void TypeCheckerVisitor::visitLogicAnd(logic_and *node)
@@ -193,13 +269,8 @@ void TypeCheckerVisitor::visitLogicAnd(logic_and *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    if (leftType == T_VOID || rightType == T_VOID)
-    {
-        semanticError("Logical AND (&&) invalid operands.");
-    }
-
-    m_last_type = T_INT;
-    node->setResolvedType(m_last_type);
+    m_last_type = checkLogicalTypes(leftType, rightType, "Logical And (&&)");
+    node->setResolvedType(T_INT);
 }
 
 void TypeCheckerVisitor::visitLogicOr(logic_or *node)
@@ -210,13 +281,8 @@ void TypeCheckerVisitor::visitLogicOr(logic_or *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    if (leftType == T_VOID || rightType == T_VOID)
-    {
-        semanticError("Logical OR (||) invalid operands.");
-    }
-
-    m_last_type = T_INT;
-    node->setResolvedType(m_last_type);
+    m_last_type = checkLogicalTypes(leftType, rightType, "Logical Or (||)");
+    node->setResolvedType(T_INT);
 }
 
 void TypeCheckerVisitor::visitLogicNot(logic_not *node)
@@ -240,13 +306,8 @@ void TypeCheckerVisitor::visitBitWiseAnd(bit_wise_and *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    if (leftType != T_INT || rightType != T_INT)
-    {
-        semanticError("Bitwise AND (&) requires Integer operands.");
-    }
-
-    m_last_type = T_INT;
-    node->setResolvedType(m_last_type);
+    m_last_type = checkBitwiseTypes(leftType, rightType, "Bitwise And (&)");
+    node->setResolvedType(T_INT);
 }
 
 void TypeCheckerVisitor::visitBitWiseOr(bit_wise_or *node)
@@ -257,13 +318,8 @@ void TypeCheckerVisitor::visitBitWiseOr(bit_wise_or *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    if (leftType != T_INT || rightType != T_INT)
-    {
-        semanticError("Bitwise OR (|) requires Integer operands.");
-    }
-
-    m_last_type = T_INT;
-    node->setResolvedType(m_last_type);
+    m_last_type = checkBitwiseTypes(leftType, rightType, "Bitwise Or (|)");
+    node->setResolvedType(T_INT);
 }
 
 void TypeCheckerVisitor::visitBitWiseXor(bit_wise_xor *node)
@@ -274,13 +330,8 @@ void TypeCheckerVisitor::visitBitWiseXor(bit_wise_xor *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    if (leftType != T_INT || rightType != T_INT)
-    {
-        semanticError("Bitwise XOR (^) requires Integer operands.");
-    }
-
-    m_last_type = T_INT;
-    node->setResolvedType(m_last_type);
+    m_last_type = checkBitwiseTypes(leftType, rightType, "Bitwise XOR (^)");
+    node->setResolvedType(T_INT);
 }
 
 void TypeCheckerVisitor::visitBitWiseNot(bit_wise_not *node)
@@ -304,13 +355,9 @@ void TypeCheckerVisitor::visitShiftLeft(shift_left *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    if (leftType != T_INT || rightType != T_INT)
-    {
-        semanticError("Bitwise Shift (<<) requires Integer operands.");
-    }
-
-    m_last_type = T_INT;
-    node->setResolvedType(m_last_type);
+    m_last_type =
+        checkBitwiseTypes(leftType, rightType, "Bitwise Shift Left (<<)");
+    node->setResolvedType(T_INT);
 }
 
 void TypeCheckerVisitor::visitShiftRight(shift_right *node)
@@ -321,13 +368,9 @@ void TypeCheckerVisitor::visitShiftRight(shift_right *node)
     node->getChildrenList().back()->accept(*this);
     dataType rightType = m_last_type;
 
-    if (leftType != T_INT || rightType != T_INT)
-    {
-        semanticError("Bitwise Shift (>>) requires Integer operands.");
-    }
-
-    m_last_type = T_INT;
-    node->setResolvedType(m_last_type);
+    m_last_type =
+        checkBitwiseTypes(leftType, rightType, "Bitwise Shift Right (>>)");
+    node->setResolvedType(T_INT);
 }
 
 void TypeCheckerVisitor::visitPostfixIncrement(postfix_increment *node)
@@ -347,7 +390,7 @@ void TypeCheckerVisitor::visitPostfixIncrement(postfix_increment *node)
 
     if (!sym)
     {
-        semanticError("Variable " + name + "is not declared");
+        semanticError("Variable \"" + name + "\" is not declared");
     }
 
     m_last_type = sym->getValueType();
@@ -371,7 +414,7 @@ void TypeCheckerVisitor::visitPostfixDecrement(postfix_decrement *node)
 
     if (!sym)
     {
-        semanticError("Variable " + name + "is not declared");
+        semanticError("Variable \"" + name + "\" is not declared");
     }
 
     m_last_type = sym->getValueType();
@@ -395,7 +438,7 @@ void TypeCheckerVisitor::visitPrefixIncrement(prefix_increment *node)
 
     if (!sym)
     {
-        semanticError("Variable " + name + "is not declared");
+        semanticError("Variable \"" + name + "\" is not declared");
     }
 
     m_last_type = sym->getValueType();
@@ -419,7 +462,7 @@ void TypeCheckerVisitor::visitPrefixDecrement(prefix_decrement *node)
 
     if (!sym)
     {
-        semanticError("Variable " + name + "is not declared");
+        semanticError("Variable \"" + name + "\" is not declared");
     }
 
     m_last_type = sym->getValueType();
@@ -437,7 +480,7 @@ void TypeCheckerVisitor::visitPlusAssignment(plus_assignment *node)
 
     if (!sym)
     {
-        semanticError("Identifier" + name + "not defined in scope");
+        semanticError("Identifier \"" + name + "\" not defined in scope");
     }
 
     it++;
@@ -466,7 +509,7 @@ void TypeCheckerVisitor::visitMinusAssignment(minus_assignment *node)
 
     if (!sym)
     {
-        semanticError("Identifier" + name + "not defined in scope");
+        semanticError("Identifier \"" + name + "\" not defined in scope");
     }
 
     it++;
@@ -495,7 +538,7 @@ void TypeCheckerVisitor::visitMulAssignment(mul_assignment *node)
 
     if (!sym)
     {
-        semanticError("Identifier" + name + "not defined in scope");
+        semanticError("Identifier \"" + name + "\" not defined in scope");
     }
 
     it++;
@@ -524,7 +567,7 @@ void TypeCheckerVisitor::visitDivAssignment(div_assignment *node)
 
     if (!sym)
     {
-        semanticError("Identifier" + name + "not defined in scope");
+        semanticError("Identifier \"" + name + "\" not defined in scope");
     }
 
     it++;
@@ -553,7 +596,7 @@ void TypeCheckerVisitor::visitModAssignment(mod_assignment *node)
 
     if (!sym)
     {
-        semanticError("Identifier" + name + "not defined in scope");
+        semanticError("Identifier \"" + name + "\" not defined in scope");
     }
 
     it++;
@@ -581,7 +624,7 @@ void TypeCheckerVisitor::visitAssignment(assignment *node)
 
     if (!sym)
     {
-        semanticError(" identifier not declared");
+        semanticError("Identifier \"" + name + "\" not defined in scope");
     }
 
     it++;
@@ -614,7 +657,7 @@ void TypeCheckerVisitor::visitParameterList(parameter_list *node)
         type = static_cast<type_specifier *>(*it)->getType();
         if (type == T_VOID)
         {
-            semanticError("You cant put a void type parameter");
+            semanticError("Void type parameters are not allowed");
         }
         it++;
         std::string id = static_cast<IDENTIFIER *>(*it)->getLabel();
@@ -629,7 +672,7 @@ void TypeCheckerVisitor::visitParameterList(parameter_list *node)
         type = static_cast<type_specifier *>(*it)->getType();
         if (type == T_VOID)
         {
-            semanticError("You cant put a void type parameter");
+            semanticError("Void type parameters are not allowed");
         }
         it++;
         std::string id = static_cast<IDENTIFIER *>(*it)->getLabel();
@@ -681,7 +724,8 @@ void TypeCheckerVisitor::visitFunctionCall(function_call *node)
 
     if (!def)
     {
-        semanticError("The function you try to call isn't defined");
+        semanticError("Function \"" + func_name +
+                      "\" isn't defined, thus you can't call it");
     }
 
     if (childs.size() == 1) // No arguments
@@ -703,17 +747,18 @@ void TypeCheckerVisitor::visitFunctionCall(function_call *node)
     std::vector<parameter> &func_params = def->getParameters();
     if (func_params.size() != final_types.size())
     {
-        semanticError(
-            "The function you try to call dose not have the same arguments "
-            "as parameters that are defined");
+        semanticError("Function \"" + func_name +
+                      "\" has different number or parameters declared that "
+                      "arguments given on call");
     }
 
     for (size_t i = 0; i < func_params.size(); i++)
     {
         if (!isCompatible(func_params[i].type, final_types[i]))
         {
-            semanticError("The arguments you try to pass into the function are "
-                          "not matching the function parameters declared");
+            semanticError("Argument number " + std::to_string(i) +
+                          " has a different type than the parameter declared "
+                          "at the same position");
         }
     }
 
@@ -735,7 +780,7 @@ void TypeCheckerVisitor::visitFunctionDeclaration(function_declaration *node)
 
     if (!SymbolTable::getInstance()->insert(sym))
     {
-        semanticError("Function already declared");
+        semanticError("Function \"" + id + "\" already declared");
     }
 
     m_params.clear();
@@ -760,15 +805,19 @@ void TypeCheckerVisitor::visitFunctionDefinition(function_definition *node)
 
     if (existing)
     {
-        if (existing->getReturnType() != return_type ||
-            existing->getParameters() != m_params)
+        if (existing->getReturnType() != return_type)
         {
-            semanticError("Conflicting types for function " + id);
+            semanticError("Conflicting return type for function " + id);
         }
-
-        if (existing->getFunctionBody() != nullptr)
+        else if (existing->getParameters() != m_params)
         {
-            semanticError("Function " + id + " already defined");
+            semanticError(
+                "Different parameters declared than defined for function " +
+                id);
+        }
+        else if (existing->getFunctionBody() != nullptr)
+        {
+            semanticError("Function \"" + id + "\" already defined");
         }
         existing->setFunctionBody(body);
     }
@@ -777,7 +826,7 @@ void TypeCheckerVisitor::visitFunctionDefinition(function_definition *node)
         FuncSymbol *sym = new FuncSymbol(return_type, body, m_params, id);
         if (!SymbolTable::getInstance()->insertGlobal(sym))
         {
-            semanticError("Function " + id + " already defined");
+            semanticError("Function \"" + id + "\" already defined");
         }
     }
 
@@ -800,7 +849,7 @@ void TypeCheckerVisitor::visitFunctionDefinition(function_definition *node)
 
     if (return_type != T_VOID && !m_found_return)
     {
-        semanticError("Non-void functions should return a value");
+        semanticError("Non-void function \"" + id + "\" should return a value");
     }
 
     m_expected_return_type = T_VOID;
@@ -857,12 +906,20 @@ void TypeCheckerVisitor::visitVariableDeclarationStatement(
     {
         var->accept(*this);
 
+        std::string name =
+            static_cast<IDENTIFIER *>(var->getChildrenList().front())
+                ->getLabel();
+
         if (var->getChildrenList().size() > 1)
         {
             if (!isCompatible(current_type, m_last_type))
             {
-                semanticError("Type Mismatch, cannot initialize variable witch "
-                              "diffent types");
+                semanticError("Type Mismatch, cannot initialize variable \"" +
+                              name +
+                              "\" with "
+                              "conflicting types of " +
+                              typeToString(current_type) + " and " +
+                              typeToString(m_last_type));
             }
         }
 
@@ -874,7 +931,8 @@ void TypeCheckerVisitor::visitVariableDeclarationStatement(
 
         if (!SymbolTable::getInstance()->insert(sym))
         {
-            semanticError("Variable " + sym->getName() + " already exists.");
+            semanticError("Variable \"" + sym->getName() +
+                          "\" already exists.");
         }
     }
 
@@ -903,7 +961,8 @@ void TypeCheckerVisitor::visitReturn(return_node *node)
     if (!isCompatible(m_expected_return_type, m_last_type))
     {
         // Check if i want to make promotions
-        semanticError("Return statement must match return function");
+        semanticError("Expression in return statement must not conflict with "
+                      "expected return type");
     }
     node->setResolvedType(m_last_type);
 }
@@ -1020,9 +1079,7 @@ void TypeCheckerVisitor::visitContinue(continue_node *node)
 {
     if (m_loop_depth == 0)
     {
-        semanticError(
-            "Semantic Error: 'continue' statement used outside of a loop.");
-        exit(1);
+        semanticError("Continue statement used outside of a loop.");
     }
 }
 
@@ -1030,9 +1087,7 @@ void TypeCheckerVisitor::visitBreak(break_node *node)
 {
     if (m_loop_depth == 0)
     {
-        semanticError(
-            "Semantic Error: 'break' statement used outside of a loop.");
-        exit(1);
+        semanticError("Break statement used outside of a loop.");
     }
 }
 
@@ -1040,64 +1095,4 @@ void TypeCheckerVisitor::visitCondition(condition *node)
 {
     (*node->getChildrenList().begin())->accept(*this);
     node->setResolvedType(m_last_type);
-}
-
-void TypeCheckerVisitor::semanticError(std::string s)
-{
-    std::cerr << "Semantic Error: " + s << std::endl;
-    exit(1);
-}
-
-std::string TypeCheckerVisitor::typeToString(dataType type)
-{
-    switch (type)
-    {
-    case T_VOID:
-        return "void";
-
-    case T_INT:
-        return "int";
-
-    case T_FLOAT:
-        return "float";
-    }
-
-    return "";
-}
-
-dataType TypeCheckerVisitor::checkMathTypes(dataType left, dataType right,
-                                            std::string op)
-{
-
-    if (left == T_FLOAT || right == T_FLOAT)
-    {
-        return T_FLOAT;
-    }
-    else if (left == T_INT && right == T_INT)
-    {
-        return T_INT;
-    }
-
-    semanticError("Type Mismatch: Cannot perform '" + op + "' on " +
-                  typeToString(left) + " and " + typeToString(right));
-    return T_VOID; // Unreachable due to semanticError exit
-}
-
-bool TypeCheckerVisitor::isCompatible(dataType target, dataType source)
-{
-
-    if (target == source)
-    {
-        return true;
-    }
-    if (target == T_FLOAT && source == T_INT)
-    {
-        return true; // Upgrade
-    }
-    if (target == T_INT && source == T_FLOAT)
-    {
-        return true; // Truncation (C allows this)
-    }
-
-    return false;
 }

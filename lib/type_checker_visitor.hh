@@ -1,4 +1,5 @@
 #pragma once
+#include "types.hh"
 #ifndef TYPECHECKER_
 #define TYPECHECKER_
 
@@ -11,16 +12,15 @@
 class TypeCheckerVisitor : public Visitor
 {
   private:
-    unsigned int m_loop_depth;
-
     // The basic field for visitor pattern to work
     dataType m_last_type;
 
     // Helper fields to identify function correctness
     dataType m_expected_return_type;
     bool m_found_return;
+    unsigned int m_loop_depth;
 
-    // Helper lists/vectors for parameters, arguments and variables
+    // Helper vectors for parameters, arguments and variables
     std::vector<parameter> m_params;
     std::vector<STNode *> m_args;
     std::vector<STNode *> m_vars;
@@ -29,6 +29,8 @@ class TypeCheckerVisitor : public Visitor
     void semanticError(std::string s);
     std::string typeToString(dataType type);
     dataType checkMathTypes(dataType left, dataType right, std::string op);
+    dataType checkLogicalTypes(dataType left, dataType right, std::string op);
+    dataType checkBitwiseTypes(dataType left, dataType right, std::string op);
     bool isCompatible(dataType target, dataType source);
 
   public:
