@@ -67,11 +67,11 @@ loc->step();
 "<<"    { return token::SHIFT_LEFT; }
 ">>"    { return token::SHIFT_RIGHT; }
 
-"int"       { return token::INT_TYPE; }
+"int"   { return token::INT_TYPE; }
  /* "double"    { return token::DOUBLE_TYPE; } */
-"float"     { return token::FLOAT_TYPE; }
+"float" { return token::FLOAT_TYPE; }
  /* "char"      { return token::CHAR_TYPE; } */
-"void"      { return token::VOID_TYPE; }
+"void"  { return token::VOID_TYPE; }
 
 "return"    { return token::RETURN; }
 "break"     { return token::BREAK; }

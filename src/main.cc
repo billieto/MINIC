@@ -18,8 +18,7 @@ extern FILE *yyin;
  *  2) Maybe rearrange the Syntax Tree for better grammar, like binary op, unary op etc. (med prio)
  *  3) Migrate to AST (med prio)
  *  4) Support char and/or string (low prio)
- *  5) Better error messages for Lexer, Parser, Semantic, Runtime errors (high prio)
- *  6) Maybe expand my files? (low prio)
+ *  5) Maybe expand my files? (low prio)
  */
 
 int main(int argc, char *argv[])
