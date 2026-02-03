@@ -726,12 +726,12 @@ void EvaluatorVisitor::visitProgram(program *node)
     // When i will make scopes for every compound statement this will leave
     // Because function_body is always a compound statement
 
-    if (!entry->getParameters().empty())
-    {
-        std::cerr << "Cant support main parameters (maybe for now)"
-                  << std::endl;
-        exit(1);
-    }
+    // if (!entry->getParameters().empty())
+    // {
+    //     std::cerr << "Cant support main parameters (maybe for now)"
+    //               << std::endl;
+    //     exit(1);
+    // }
 
     SymbolTable::getInstance()->enterScope(
         SymbolTable::getInstance()->getCurrentId() + 1);

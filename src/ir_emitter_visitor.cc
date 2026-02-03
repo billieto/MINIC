@@ -1185,6 +1185,8 @@ void IREmitterVisitor::visitFunctionDefinition(function_definition *node)
         SymbolTable::getInstance()->insert(sym);
     }
 
+    m_params.clear();
+    
     body->accept(*this);
 
     if (return_type == T_VOID)

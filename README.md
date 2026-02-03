@@ -53,7 +53,7 @@ To clean all files generated and obj directory use:
 make distclean
 ```
 
-### Notes
+## Notes
 
 The compiler has the ability to be used as an interpreter but only calculating integers and the global declarations are done with a helper Visitor called Declarator.
 
