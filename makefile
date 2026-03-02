@@ -95,7 +95,7 @@ clean:
 # Clean all generated files including flex/bison outputs
 distclean: clean
 	rm -f $(FLEX_CC) $(FLEX_HH) $(BISON_CC) $(BISON_HH) $(VERBOSE) $(LIB_DIR)/location.hh
-	rm -rf $(BIN_DIR) $(DEBUG_DIR)
+	rm -rf $(BIN_DIR) $(DEBUG_DIR) $(OUT_DIR)
 
 # Run the compiler, generate the IR, compile the IR, and run the result
 test-run: $(TARGET) | $(OUT_DIR)
