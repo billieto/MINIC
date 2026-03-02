@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     parser.parse();
 
     // Syntax Tree
-    dot = new std::ofstream("ST.dot", std::ofstream::out);
+    dot = new std::ofstream("debug/ST.dot", std::ofstream::out);
     *dot << "digraph ST\n{\n";
     g_root->printSyntaxTree(dot);
     *dot << "}";
