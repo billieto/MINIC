@@ -7,7 +7,7 @@ IREmitterVisitor::IREmitterVisitor()
     m_reg_count = 0;
     m_label_count = 0;
     m_var_count = 0;
-    m_file_ll.open("ir.ll");
+    m_file_ll.open("out/ir.ll");
     m_ll = &m_file_ll;
     SymbolTable::getInstance()->enterScope(
         SymbolTable::getInstance()->getCurrentId());
